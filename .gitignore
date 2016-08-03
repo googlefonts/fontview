@@ -13,10 +13,6 @@
 *.dylib
 *.dll
 
-# Fortran module files
-*.mod
-*.smod
-
 # Compiled Static libraries
 *.lai
 *.la
@@ -27,3 +23,6 @@
 *.exe
 *.out
 *.app
+
+# Temporary files for emacs
+*~
