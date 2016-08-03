@@ -1,0 +1,3 @@
+[submodule "src/third_party/gyp"]
+	path = src/third_party/gyp
+	url = https://chromium.googlesource.com/external/gyp
