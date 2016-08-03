@@ -1,3 +1,6 @@
 [submodule "src/third_party/gyp"]
 	path = src/third_party/gyp
 	url = https://chromium.googlesource.com/external/gyp
+[submodule "src/third_party/freetype/freetype2"]
+	path = src/third_party/freetype/freetype2
+	url = git://git.sv.nongnu.org/freetype/freetype2.git
