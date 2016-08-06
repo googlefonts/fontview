@@ -7,6 +7,7 @@
         'main.cpp',
       ],
       'dependencies': [
+        '../third_party/freetype/freetype.gyp:freetype',
         '../third_party/wxWidgets/wxWidgets.gyp:core',
       ],
     },
