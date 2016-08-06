@@ -4,3 +4,6 @@
 [submodule "src/third_party/freetype/freetype2"]
 	path = src/third_party/freetype/freetype2
 	url = git://git.sv.nongnu.org/freetype/freetype2.git
+[submodule "src/third_party/wxWidgets/wxWidgets"]
+	path = src/third_party/wxWidgets/wxWidgets
+	url = https://github.com/wxWidgets/wxWidgets.git
