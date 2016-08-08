@@ -13,6 +13,7 @@ typedef std::map<int, std::string> NameTable;
 NameTable* BuildNameTable(FT_Face face);
 const std::string& GetFontName(const NameTable& names, int id);
 const std::string& GetFontFamilyName(const NameTable& names);
+const std::string& GetFontStyleName(const NameTable& names);
 }  // namespace fontview
 
 #endif // FONTVIEW_NAME_TABLE

@@ -6,25 +6,25 @@
 #include <vector>
 
 #include <ft2build.h>
-#include FT_GLYPH_H
+#include FT_FREETYPE_H
 
 namespace fontview {
 typedef std::map<int, std::string> NameTable;
 
 class FontStyle {
  public:
-  static std::vector<FontStyle> GetStyles(
+  typedef std::map<FT_ULong, double> Variation;
+  static std::vector<FontStyle*> GetStyles(
       FT_Face face, const NameTable& names);
   ~FontStyle();
   const std::string& GetName() const { return name_; }
 
  private:
-  FontStyle(FT_Face face, const std::string& name,
-            const std::map<std::string, double>& axisValues);
+  FontStyle(FT_Face face, const std::string& name, const Variation& variation);
 
   FT_Face face_;
   const std::string name_;
-  const std::map<std::string, double>& axisValues_;
+  const Variation variation_;
 };
 
 }  // namespace fontview

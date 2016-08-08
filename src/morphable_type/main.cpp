@@ -21,6 +21,7 @@
 #include "font_style.h"
 
 using fontview::BuildNameTable;
+using fontview::FontStyle;
 using fontview::GetFontName;
 using fontview::GetFontFamilyName;
 using fontview::NameTable;
@@ -55,6 +56,7 @@ class MyFrame : public wxFrame {
   wxDECLARE_EVENT_TABLE();
   std::unique_ptr<std::vector<FT_Face>> faces_;
   std::vector<NameTable*> faceNames_;
+  std::vector<FontStyle*> fontStyles_;
   wxChoice* familyChoice_;
   wxChoice* styleChoice_;
   wxSpinCtrlDouble* sizeControl_;
@@ -218,6 +220,9 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
 }
 
 MyFrame::~MyFrame() {
+  for (FontStyle* style : fontStyles_) {
+    delete style;
+  }
   for (NameTable* table : faceNames_) {
     delete table;
   }
@@ -250,6 +255,11 @@ void MyFrame::OnAbout(wxCommandEvent& event) {
 void MyFrame::OnFamilyChanged(wxCommandEvent& event) {
   const std::string family = event.GetString().ToStdString();
   styleChoice_->Clear();
+  for (FontStyle* style : fontStyles_) {
+    delete style;
+  }
+  fontStyles_.clear();
+
   if (family.empty()) {
     return;
   }
@@ -260,20 +270,9 @@ void MyFrame::OnFamilyChanged(wxCommandEvent& event) {
     if (family != GetFontFamilyName(names)) {
       continue;
     }
-    FT_MM_Var* variations = NULL;
-    if (FT_HAS_MULTIPLE_MASTERS(face)) {
-      FT_Get_MM_Var(face, &variations);
-    }
-    if (variations && variations->num_namedstyles > 0) {
-      for (FT_UInt i = 0; i < variations->num_namedstyles; ++i) {
-        const std::string& styleName =
-            GetFontName(names, variations->namedstyle[i].strid);
-        if (!styleName.empty()) {
-          styleChoice_->Append(styleName);
-        }
-      }
-    } else {
-      styleChoice_->Append(face->style_name);
+    for (FontStyle* style : FontStyle::GetStyles(face, names)) {
+      fontStyles_.push_back(style);
+      styleChoice_->Append(style->GetName(), static_cast<void*>(style));
     }
   }
 }

@@ -76,6 +76,15 @@ const std::string& GetFontFamilyName(const NameTable& names) {
   return GetFontName(names, 1);
 }
 
+const std::string& GetFontStyleName(const NameTable& names) {
+  const std::string& name = GetFontName(names, 17);
+  if (!name.empty()) {
+    return name;
+  }
+
+  return GetFontName(names, 2);
+}
+
 wxFontEncoding GetFontNameEncoding(const FT_SfntName& name) {
   if (name.platform_id == TT_PLATFORM_MICROSOFT) {
     switch (name.encoding_id) {
