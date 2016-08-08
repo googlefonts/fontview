@@ -4,7 +4,9 @@
       'target_name': 'morphable_type',
       'type': 'executable',
       'sources': [
+        'font_style.cpp',
         'main.cpp',
+        'name_table.cpp',
       ],
       'dependencies': [
         '../third_party/freetype/freetype.gyp:freetype',
