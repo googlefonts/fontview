@@ -83,6 +83,9 @@ std::vector<FT_Face>* LoadFaces(const std::string& path) {
   return faces;
 }
 
+static const wxFontEncoding UNSUPPORTED_ENCODING =
+    static_cast<wxFontEncoding>(-1);
+
 wxFontEncoding GetFontNameEncoding(const FT_SfntName& name) {
   if (name.platform_id == TT_PLATFORM_MICROSOFT) {
     switch (name.encoding_id) {
@@ -135,22 +138,37 @@ wxFontEncoding GetFontNameEncoding(const FT_SfntName& name) {
     }
   }
 
-  return wxFONTENCODING_SYSTEM;
+  return UNSUPPORTED_ENCODING;
 }
 
 
 int GetFontNameQuality(const FT_SfntName& name) {
-  wxCSConv converter(GetFontNameEncoding(name));
+  const wxFontEncoding encoding = GetFontNameEncoding(name);
+  if (encoding == UNSUPPORTED_ENCODING) {
+    return 0;
+  }
+
+  wxCSConv converter(encoding);
   if (!converter.IsOk()) {
     return 0;
   }
 
+  // Give a slight preference to Unicode-encoded names.
+  int encodingQuality = 0;
+  if (encoding == wxFONTENCODING_UTF16BE) {
+    encodingQuality = 2;
+  }
+
+  // TODO: Run a language matcher against the user's preferred languages.
+  // Currently, we prefer US English and penalize everything else.
   if (name.platform_id == TT_PLATFORM_MICROSOFT) {
-    return name.language_id == 1033 ? 10 : 5;
+    encodingQuality += name.language_id == 1033 ? 10 : 5;
+    return encodingQuality;
   }
 
   if (name.platform_id == TT_PLATFORM_MACINTOSH) {
-    return name.language_id == 0 ? 10 : 5;
+    encodingQuality += name.language_id == 0 ? 10 : 5;
+    return encodingQuality;
   }
 
   return 0;
@@ -175,7 +193,12 @@ void GetFontNames(FT_Face face, std::map<int, std::string>* names) {
       continue;
     }
 
-    wxCSConv converter(GetFontNameEncoding(name));
+    const wxFontEncoding encoding = GetFontNameEncoding(name);
+    if (encoding == UNSUPPORTED_ENCODING) {
+      continue;
+    }
+
+    wxCSConv converter(encoding);
     if (!converter.IsOk()) {
       continue;
     }
