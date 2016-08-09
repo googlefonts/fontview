@@ -19,12 +19,15 @@
 
 #include "name_table.h"
 #include "font_style.h"
+#include "text_settings.h"
 
 using fontview::BuildNameTable;
 using fontview::FontStyle;
 using fontview::GetFontName;
 using fontview::GetFontFamilyName;
 using fontview::NameTable;
+using fontview::TextSettings;
+
 
 class MyApp : public wxApp {
  public:
@@ -42,7 +45,7 @@ class MyApp : public wxApp {
 class MyFrame : public wxFrame {
  public:
   MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
-          std::vector<FT_Face>* faces);
+          TextSettings* textSettings);  // takes ownership
   virtual ~MyFrame();
 
  private:
@@ -52,11 +55,13 @@ class MyFrame : public wxFrame {
   void OnExit(wxCommandEvent& event);
   void OnAbout(wxCommandEvent& event);
   void OnFamilyChanged(wxCommandEvent& event);
+  void OnTextSettingsChanged();
 
   wxDECLARE_EVENT_TABLE();
-  std::unique_ptr<std::vector<FT_Face>> faces_;
-  std::vector<NameTable*> faceNames_;
-  std::vector<FontStyle*> fontStyles_;
+  std::unique_ptr<TextSettings> textSettings_;
+  TextSettings::Listener textSettingsListener_;
+  bool processingModelChange_;
+
   wxChoice* familyChoice_;
   wxChoice* styleChoice_;
   wxSpinCtrlDouble* sizeControl_;
@@ -71,26 +76,11 @@ wxEND_EVENT_TABLE()
 
 static FT_Library freeTypeLibrary_ = NULL;
 
-std::vector<FT_Face>* LoadFaces(const std::string& path) {
-  std::vector<FT_Face>* faces = new std::vector<FT_Face>();
-  FT_Long numFaces = 0;
-  FT_Face face = NULL;
-  FT_Error error = FT_New_Face(freeTypeLibrary_, path.c_str(), -1, &face);
-  if (face) {
-    if (!error) {
-      numFaces = face->num_faces;
-    }
-    FT_Done_Face(face);
-  }
-  for (FT_Long faceIndex = 0; faceIndex < numFaces; ++faceIndex) {
-    face = NULL;
-    if (FT_New_Face(freeTypeLibrary_, path.c_str(), faceIndex, &face)) {
-      continue;
-    }
-    faces->push_back(face);
-  }
-  return faces;
+namespace fontview {
+FT_Library GetFreeTypeLibrary() {
+  return freeTypeLibrary_;
 }
+}  // namespace fontview
 
 MyApp::MyApp()
   : numDocuments_(0) {
@@ -109,8 +99,8 @@ bool MyApp::OpenFontFile(wxWindow* parent) {
 }
 
 void MyApp::MacOpenFile(const wxString& path) {
-  std::unique_ptr<std::vector<FT_Face>> faces(LoadFaces(path.ToStdString()));
-  if (!faces.get() || faces->empty()) {
+  std::unique_ptr<TextSettings> textSettings(new TextSettings());
+  if (!textSettings->SetFontContainer(path.ToStdString())) {
     wxMessageBox("Morphable Type does not understand "
                  "the format of the selected file.",
                  "Unsupported File Format", wxOK | wxICON_ERROR);
@@ -121,7 +111,7 @@ void MyApp::MacOpenFile(const wxString& path) {
   wxPoint pos(16 * numDocuments_, 20 + 16 * numDocuments_);
   wxFileName filename(path);
   MyFrame* frame = new MyFrame(filename.GetFullName(), pos, wxSize(600, 340),
-                               faces.release());
+                               textSettings.release());
   frame->Show(true);
 }
 
@@ -137,14 +127,12 @@ bool MyApp::OnInit() {
 }
 
 MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
-                 std::vector<FT_Face>* faces)
+                 TextSettings* textSettings)
   : wxFrame(NULL, wxID_ANY, title, pos, size),
-    faces_(faces), faceNames_(),
+    textSettings_(textSettings),
+    textSettingsListener_([this]() { this->OnTextSettingsChanged(); }),
     familyChoice_(NULL), styleChoice_(NULL), sizeControl_(NULL) {
-  for (size_t i = 0; i < faces->size(); ++i) {
-    NameTable* names = BuildNameTable(faces->at(i));
-    faceNames_.push_back(names);
-  }
+  textSettings_->AddListener(&textSettingsListener_);
 
   wxMenu* fileMenu = new wxMenu();
   fileMenu->Append(wxID_NEW);
@@ -159,19 +147,6 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
   menuBar->Append(fileMenu, "&File");
   menuBar->Append(helpMenu, "&Help");
   SetMenuBar(menuBar);
-
-  std::set<std::string> families;
-  std::string firstFamily;
-  for (size_t i = 0; i < faceNames_.size(); ++i) {
-    const NameTable& nameTable = *faceNames_[i];
-    const std::string& familyName = GetFontFamilyName(nameTable);
-    if (!familyName.empty()) {
-      families.insert(familyName);
-      if (firstFamily.empty()) {
-        firstFamily = familyName;
-      }
-    }
-  }
 
   wxPanel* framePanel = new wxPanel(this);
   wxPanel* textPanel = new wxPanel(framePanel);
@@ -191,7 +166,7 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
   stylePanel->SetSizer(stylePanelSizer);
 
   std::vector<wxString> familyChoices;
-  for (const std::string family : families) {
+  for (const std::string family : textSettings_->GetFamilies()) {
     familyChoices.push_back(wxString(family));
   }
 
@@ -210,26 +185,17 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
     wxSP_ARROW_KEYS, 1, 999, 12, 0.5);
   sizeControl_->SetMaxSize(wxSize(60, -1));
   stylePanelSizer->Add(sizeControl_, 0, wxALL, 0);
-
-  if (!firstFamily.empty()) {
-    wxCommandEvent event;
-    event.SetString(firstFamily);
-    OnFamilyChanged(event);
-  }
+  //{
+  // wxCommandEvent event;
+  //event.SetString(textSettings_->GetFamily());
+  //OnFamilyChanged(event);
+  //}
+  OnTextSettingsChanged();
   familyChoice_->Bind(wxEVT_CHOICE, &MyFrame::OnFamilyChanged, this);
 }
 
 MyFrame::~MyFrame() {
-  for (FontStyle* style : fontStyles_) {
-    delete style;
-  }
-  for (NameTable* table : faceNames_) {
-    delete table;
-  }
-  for (FT_Face face : *faces_) {
-    FT_Done_Face(face);
-  }
-  faces_->clear();
+  textSettings_->RemoveListener(&textSettingsListener_);
 }
 
 void MyFrame::OnOpen(wxCommandEvent& event) {
@@ -252,28 +218,44 @@ void MyFrame::OnAbout(wxCommandEvent& event) {
   wxAboutBox(info);
 }
 
-void MyFrame::OnFamilyChanged(wxCommandEvent& event) {
-  const std::string family = event.GetString().ToStdString();
+void MyFrame::OnTextSettingsChanged() {
+  printf("MyFrame::OnTextSettingsChanged\n"
+         "  family: %s\n", textSettings_->GetFamily().c_str());
+
+  processingModelChange_ = true;
+  familyChoice_->Clear();
+  for (const std::string& family : textSettings_->GetFamilies()) {
+    familyChoice_->Append(wxString(family));
+  }
+  familyChoice_->SetStringSelection(textSettings_->GetFamily());
+
   styleChoice_->Clear();
-  for (FontStyle* style : fontStyles_) {
-    delete style;
-  }
-  fontStyles_.clear();
-
-  if (family.empty()) {
-    return;
-  }
-
-  for (size_t faceIndex = 0; faceIndex < faces_->size(); ++faceIndex) {
-    FT_Face face = faces_->at(faceIndex);
-    const NameTable& names = *faceNames_[faceIndex];
-    if (family != GetFontFamilyName(names)) {
-      continue;
+  std::vector<FontStyle*> styles;
+  for (FontStyle* style : textSettings_->GetStyles()) {
+    if (style->GetFamilyName() == textSettings_->GetFamily()) {
+      styles.push_back(style);
     }
-    for (FontStyle* style : FontStyle::GetStyles(face, names)) {
-      fontStyles_.push_back(style);
-      styleChoice_->Append(style->GetName(), static_cast<void*>(style));
-    }
+  }
+  std::sort(styles.begin(), styles.end(),
+	    [](const FontStyle* a, const FontStyle* b) {
+              double va = a->GetWeight(), vb = b->GetWeight();
+	      if (va < vb) return true; else if (va > vb) return false;
+	      va = a->GetWidth(); vb = b->GetWidth();
+	      if (va < vb) return true; else if (va > vb) return false;
+	      va = a->GetSlant(); vb = b->GetSlant();
+	      if (va < vb) return true; else if (va > vb) return false;
+	      return a->GetStyleName() < b->GetStyleName();
+	    });
+  for (FontStyle* style : styles) {
+    styleChoice_->Append(style->GetStyleName(), static_cast<void*>(style));
+  }
+  processingModelChange_ = false;
+}
+
+void MyFrame::OnFamilyChanged(wxCommandEvent& event) {
+  if (!processingModelChange_) {
+    const std::string family = event.GetString().ToStdString();
+    textSettings_->SetFamily(family);
   }
 }
 
