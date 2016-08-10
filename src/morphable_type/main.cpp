@@ -9,23 +9,20 @@
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
+#include <wx/gbsizer.h>
+#include <wx/slider.h>
 #include <wx/spinctrl.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_MULTIPLE_MASTERS_H
-#include FT_SFNT_NAMES_H
-#include FT_TRUETYPE_IDS_H
 
 #include "name_table.h"
 #include "font_style.h"
+#include "font_var_axis.h"
 #include "text_settings.h"
 
-using fontview::BuildNameTable;
 using fontview::FontStyle;
-using fontview::GetFontName;
-using fontview::GetFontFamilyName;
-using fontview::NameTable;
+using fontview::FontVarAxis;
 using fontview::TextSettings;
 
 
@@ -54,17 +51,30 @@ class MyFrame : public wxFrame {
   void OnHello(wxCommandEvent& event);
   void OnExit(wxCommandEvent& event);
   void OnAbout(wxCommandEvent& event);
-  void OnFamilyChanged(wxCommandEvent& event);
+  void OnFamilyChoiceChanged(wxCommandEvent& event);
+  void OnStyleChoiceChanged(wxCommandEvent& event);
   void OnTextSettingsChanged();
+  bool ShouldRebuildAxisSliders() const;
+  void RebuildAxisSliders();
 
   wxDECLARE_EVENT_TABLE();
   std::unique_ptr<TextSettings> textSettings_;
   TextSettings::Listener textSettingsListener_;
   bool processingModelChange_;
 
+  // These wxWidgets objects are owned by wxWidgets, not by us.
+  wxPanel* propertyPanel_;
   wxChoice* familyChoice_;
   wxChoice* styleChoice_;
   wxSpinCtrlDouble* sizeControl_;
+  wxGridBagSizer* axisSizer_;
+
+  struct AxisSlider {
+    wxStaticText* title;
+    wxSlider* slider;
+    const FontVarAxis* axis;
+  };
+  std::vector<AxisSlider> axisSliders_;
 };
 
 wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
@@ -131,7 +141,9 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
   : wxFrame(NULL, wxID_ANY, title, pos, size),
     textSettings_(textSettings),
     textSettingsListener_([this]() { this->OnTextSettingsChanged(); }),
-    familyChoice_(NULL), styleChoice_(NULL), sizeControl_(NULL) {
+    propertyPanel_(NULL),
+    familyChoice_(NULL), styleChoice_(NULL), sizeControl_(NULL),
+    axisSizer_(new wxGridBagSizer()) {
   textSettings_->AddListener(&textSettingsListener_);
 
   wxMenu* fileMenu = new wxMenu();
@@ -150,8 +162,8 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
 
   wxPanel* framePanel = new wxPanel(this);
   wxPanel* textPanel = new wxPanel(framePanel);
-  wxPanel* propertyPanel = new wxPanel(framePanel);
-  wxPanel* stylePanel = new wxPanel(propertyPanel);
+  propertyPanel_ = new wxPanel(framePanel);
+  wxPanel* stylePanel = new wxPanel(propertyPanel_);
   wxBoxSizer* framePanelSizer = new wxBoxSizer(wxHORIZONTAL);
   wxBoxSizer* propertyPanelSizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer* stylePanelSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -160,9 +172,9 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
 
   framePanel->SetSizer(framePanelSizer);
   framePanelSizer->Add(textPanel, 1, wxEXPAND | wxALL, 0);
-  framePanelSizer->Add(propertyPanel, 0, wxEXPAND | wxALL, 20);
+  framePanelSizer->Add(propertyPanel_, 0, wxEXPAND | wxALL, 20);
 
-  propertyPanel->SetSizer(propertyPanelSizer);
+  propertyPanel_->SetSizer(propertyPanelSizer);
   stylePanel->SetSizer(stylePanelSizer);
 
   std::vector<wxString> familyChoices;
@@ -171,11 +183,12 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
   }
 
   familyChoice_ =
-    new wxChoice(propertyPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+    new wxChoice(propertyPanel_, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                  familyChoices.size(), &familyChoices.front());
   propertyPanelSizer->Add(familyChoice_, 0, wxEXPAND | wxALL, 0);
   propertyPanelSizer->AddSpacer(10);
   propertyPanelSizer->Add(stylePanel, 0, wxEXPAND | wxALL, 0);
+  propertyPanelSizer->Add(axisSizer_, 0, wxEXPAND | wxHORIZONTAL, 0);
 
   styleChoice_ = new wxChoice(stylePanel, wxID_ANY);
   stylePanelSizer->Add(styleChoice_, 1, wxEXPAND | wxALL, 0);
@@ -185,8 +198,12 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
     wxSP_ARROW_KEYS, 1, 999, 12, 0.5);
   sizeControl_->SetMaxSize(wxSize(60, -1));
   stylePanelSizer->Add(sizeControl_, 0, wxALL, 0);
+
+  axisSizer_->Add(0, 10, wxGBPosition(0, 0), wxDefaultSpan);
+
   OnTextSettingsChanged();
-  familyChoice_->Bind(wxEVT_CHOICE, &MyFrame::OnFamilyChanged, this);
+  familyChoice_->Bind(wxEVT_CHOICE, &MyFrame::OnFamilyChoiceChanged, this);
+  styleChoice_->Bind(wxEVT_CHOICE, &MyFrame::OnStyleChoiceChanged, this);
 }
 
 MyFrame::~MyFrame() {
@@ -254,13 +271,89 @@ void MyFrame::OnTextSettingsChanged() {
     styleChoice_->SetSelection(curStyleIndex);
   }
 
+  if (ShouldRebuildAxisSliders()) {
+    RebuildAxisSliders();
+  }
+
+  const FontStyle::Variation& var = textSettings_->GetVariation();
+  for (const AxisSlider& s : axisSliders_) {
+    FontStyle::Variation::const_iterator iter = var.find(s.axis->GetTag());
+    if (iter != var.end() && s.axis->GetMinValue() < s.axis->GetMaxValue()) {
+      double fraction = (iter->second - s.axis->GetMinValue()) /
+	(s.axis->GetMaxValue() - s.axis->GetMinValue());
+      printf("TODO: Set slider for %s to %f (range: %f..%f); %f\n",
+	     s.axis->GetName().c_str(),
+	     iter->second, s.axis->GetMinValue(), s.axis->GetMaxValue(),
+	     fraction);
+    }
+  }
+
   processingModelChange_ = false;
 }
 
-void MyFrame::OnFamilyChanged(wxCommandEvent& event) {
+// Find out if we need to rebuild the axis sliders. We avoid rebuilding
+// because this would disrupt the user experience while dragging a slider.
+bool MyFrame::ShouldRebuildAxisSliders() const {
+  FontStyle* curStyle = textSettings_->GetStyle();
+  if (curStyle == NULL) {
+    return !axisSliders_.empty();
+  }
+
+  const std::vector<FontVarAxis*>& axes = curStyle->GetAxes();
+  if (axes.size() != axisSliders_.size()) {
+    return true;
+  }
+
+  for (size_t i = 0; i < axes.size(); ++i) {
+    if (axes[i] != axisSliders_[i].axis) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void MyFrame::RebuildAxisSliders() {
+  for (const AxisSlider& s : axisSliders_) {
+    axisSizer_->Detach(s.title);
+    axisSizer_->Detach(s.slider);
+    s.title->Destroy();
+    s.slider->Destroy();
+  }
+  axisSliders_.clear();
+
+  FontStyle* curStyle = textSettings_->GetStyle();
+  if (curStyle) {
+    int row = 1;  // we have a spacer at (0, 0)
+    for (const FontVarAxis* axis : curStyle->GetAxes()) {
+      std::string title(axis->GetName());
+      title.append(":");
+      AxisSlider s;
+      s.axis = axis;
+      s.title = new wxStaticText(propertyPanel_, wxID_ANY, title);
+      s.slider = new wxSlider(propertyPanel_, wxID_ANY, 0, 0, 1000000);
+      axisSliders_.push_back(s);
+      axisSizer_->Add(s.title, wxGBPosition(row, 0), wxDefaultSpan);
+      axisSizer_->Add(s.slider, wxGBPosition(row, 1), wxDefaultSpan);
+      ++row;
+    }
+  }
+  axisSizer_->Layout();
+}
+
+void MyFrame::OnFamilyChoiceChanged(wxCommandEvent& event) {
   if (!processingModelChange_) {
     const std::string family = event.GetString().ToStdString();
     textSettings_->SetFamily(family);
+  }
+}
+
+void MyFrame::OnStyleChoiceChanged(wxCommandEvent& event) {
+  if (!processingModelChange_) {
+    FontStyle* style = static_cast<FontStyle*>(event.GetClientData());
+    if (style) {
+      textSettings_->SetStyle(style);
+    }
   }
 }
 

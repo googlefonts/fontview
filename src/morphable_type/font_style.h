@@ -19,12 +19,14 @@ class FontStyle {
   static std::vector<FontStyle*> GetStyles(
       FT_Face face, const NameTable& names);
   ~FontStyle();
+
   const std::string& GetFamilyName() const { return family_; }
   const std::string& GetStyleName() const { return name_; }
   double GetWeight() const { return weight_; }
   double GetWidth() const { return width_; }
   double GetSlant() const { return slant_; }
 
+  const std::vector<FontVarAxis*>& GetAxes() const { return *axes_; }
   double GetDistance(const Variation& var) const;
 
  private:

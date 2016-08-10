@@ -85,7 +85,7 @@ bool TextSettings::SetFontContainer(const std::string& path) {
   variation_[FontVarAxis::weightTag] = 400;
   variation_[FontVarAxis::widthTag] = 100;
   variation_[FontVarAxis::slantTag] = 0;
-  style_ = FindBestStyle(family_, variation_);
+  SetStyleWithoutNotification(FindBestStyle(family_, variation_));
 
   NotifyListeners();
   return true;
@@ -119,19 +119,33 @@ void TextSettings::SetFamily(const std::string& family) {
   NotifyListeners();
 }
 
+
 void TextSettings::SetStyle(FontStyle* style) {
+  if (SetStyleWithoutNotification(style)) {
+    NotifyListeners();
+  }
+}
+
+bool TextSettings::SetStyleWithoutNotification(FontStyle* style) {
   if (style == style_) {
-    return;
+    return false;
   }
 
   // Reject FontStyles that are not owned by us.
   if (style != NULL &&
       std::find(styles_.begin(), styles_.end(), style) == styles_.end()) {
-    return;
+    return false;
   }
 
   style_ = style;
-  NotifyListeners();
+  variation_.clear();
+  if (style) {
+    for (const FontVarAxis* axis : style->GetAxes()) {
+      variation_[axis->GetTag()] = axis->GetDefaultValue();
+    }
+  }
+
+  return true;
 }
 
 void TextSettings::Clear() {

@@ -51,6 +51,7 @@ class TextSettings {
 
  private:
   void Clear();
+  bool SetStyleWithoutNotification(FontStyle* style);
   void NotifyListeners();
 
   std::vector<Listener*> listeners_;
