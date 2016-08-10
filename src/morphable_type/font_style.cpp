@@ -29,12 +29,19 @@ std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
   }
 
   FT_MM_Var* mmvar = NULL;
+  FT_Multi_Master mmtype1;
+  bool isMMType1 = false;
   if (FT_HAS_MULTIPLE_MASTERS(face)) {
-    FT_Get_MM_Var(face, &mmvar);
+    if (FT_Get_MM_Var(face, &mmvar) != 0) {
+      mmvar = NULL;
+    }
+    if (FT_Get_Multi_Master(face, &mmtype1) == 0) {
+      isMMType1 = true;
+    }
   }
 
   bool hasNamedInstanceForDefault = false;
-  if (mmvar) {
+  if (mmvar && !isMMType1) {
     for (FT_UInt i = 0; i < mmvar->num_namedstyles; ++i) {
       const FT_Var_Named_Style& namedStyle = mmvar->namedstyle[i];
       const std::string& instanceName = GetFontName(names, namedStyle.strid);
@@ -53,7 +60,7 @@ std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
         if (isDefault) {
           hasNamedInstanceForDefault = true;
         }
-	std::vector<FontVarAxis*>* axes = FontVarAxis::MakeAxes(face, names);
+        std::vector<FontVarAxis*>* axes = FontVarAxis::MakeAxes(face, names);
         result.push_back(
           new FontStyle(face, familyName, instanceName, axes, variation));
       }
@@ -64,7 +71,17 @@ std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
     const std::string& styleName = GetFontStyleName(names);
     if (!styleName.empty()) {
       FontStyle::Variation variation;
-      if (mmvar) {
+      if (isMMType1) {
+        FT_UInt numAxes = mmtype1.num_axis;
+        if (numAxes > 4) numAxes = 4;
+        for (FT_UInt axisIndex = 0; axisIndex < numAxes; ++axisIndex) {
+          FT_Tag axisTag = FT_MAKE_TAG('V', 'A', 'R', '0' + axisIndex);
+          const FT_MM_Axis& mmAxis = mmtype1.axis[axisIndex];
+          const int32_t minValue = static_cast<int32_t>(mmAxis.minimum);
+          const int32_t maxValue = static_cast<int32_t>(mmAxis.maximum);
+          variation[axisTag] = minValue + (maxValue - minValue) / 2;
+        }
+      } else if (mmvar) {
         for (FT_UInt axisIndex = 0; axisIndex < mmvar->num_axis;
              ++axisIndex) {
           const FT_Var_Axis& axis = mmvar->axis[axisIndex];
@@ -176,7 +193,7 @@ FontStyle::~FontStyle() {
 // Helper for implementing FontStyle::GetDistance()
 static double GetVariationValue(const FontStyle::Variation& var,
                                 FT_Tag axisTag,
-                        	double defaultValue) {
+                                double defaultValue) {
   FontStyle::Variation::const_iterator iter = var.find(axisTag);
   if (iter != var.end()) {
     return iter->second;

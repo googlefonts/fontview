@@ -53,13 +53,13 @@ NameTable* BuildNameTable(FT_Face face) {
     (*result)[name.name_id] = convertedName.ToStdString();
   }
 
+  // Add a family name if we haven't one yet, eg. for Type 1 PostScript fonts.
   if (result->count(1) == 0 && face->family_name) {
-    printf("*** %s\n", face->family_name);
     (*result)[1] = std::string(face->family_name);
   }
 
+  // Add a style name if we haven't one yet, eg. for Type 1 PostScript fonts.
   if (result->count(2) == 0 && face->style_name) {
-    printf("*** %s\n", face->style_name);
     (*result)[2] = std::string(face->style_name);
   }
 
