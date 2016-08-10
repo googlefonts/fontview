@@ -88,7 +88,7 @@ MyApp::MyApp()
 
 bool MyApp::OpenFontFile(wxWindow* parent) {
   const wxString path = wxLoadFileSelector(
-      wxT("font"), wxT("otf;ttf;otc;ttc"),  // what, extensions
+      wxT("font"), wxT("otf;ttf;otc;ttc;pfb"),  // what, extensions
       wxEmptyString, parent);  // default_name, parent
   if (path.empty()) {
     return false;

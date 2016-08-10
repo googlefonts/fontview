@@ -52,6 +52,17 @@ NameTable* BuildNameTable(FT_Face face) {
     nameQuality[name.name_id] = curQuality;
     (*result)[name.name_id] = convertedName.ToStdString();
   }
+
+  if (result->count(1) == 0 && face->family_name) {
+    printf("*** %s\n", face->family_name);
+    (*result)[1] = std::string(face->family_name);
+  }
+
+  if (result->count(2) == 0 && face->style_name) {
+    printf("*** %s\n", face->style_name);
+    (*result)[2] = std::string(face->style_name);
+  }
+
   return result;
 }
 
