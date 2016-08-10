@@ -52,6 +52,7 @@ std::vector<FontVarAxis*>* FontVarAxis::MakeAxes(FT_Face face,
       const int32_t defaultValue = minValue + (maxValue - minValue) / 2;
       FontVarAxis* axis = new FontVarAxis(axisTag, name, defaultValue,
                                           minValue, maxValue);
+      result->push_back(axis);
     }
   } else {
     for (FT_UInt axisIndex = 0; axisIndex < mmvar->num_axis;
