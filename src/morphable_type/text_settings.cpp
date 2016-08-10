@@ -140,9 +140,7 @@ bool TextSettings::SetStyleWithoutNotification(FontStyle* style) {
   style_ = style;
   variation_.clear();
   if (style) {
-    for (const FontVarAxis* axis : style->GetAxes()) {
-      variation_[axis->GetTag()] = axis->GetDefaultValue();
-    }
+    variation_ = style->GetVariation();
   }
 
   return true;

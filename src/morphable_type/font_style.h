@@ -28,6 +28,7 @@ class FontStyle {
 
   const std::vector<FontVarAxis*>& GetAxes() const { return *axes_; }
   double GetDistance(const Variation& var) const;
+  const Variation& GetVariation() const { return variation_; }
 
  private:
   FontStyle(FT_Face face, const std::string& family, const std::string& name,

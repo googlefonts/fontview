@@ -20,6 +20,7 @@
 #include "font_style.h"
 #include "font_var_axis.h"
 #include "text_settings.h"
+#include "util.h"
 
 using fontview::FontStyle;
 using fontview::FontVarAxis;
@@ -281,10 +282,8 @@ void MyFrame::OnTextSettingsChanged() {
     if (iter != var.end() && s.axis->GetMinValue() < s.axis->GetMaxValue()) {
       double fraction = (iter->second - s.axis->GetMinValue()) /
 	(s.axis->GetMaxValue() - s.axis->GetMinValue());
-      printf("TODO: Set slider for %s to %f (range: %f..%f); %f\n",
-	     s.axis->GetName().c_str(),
-	     iter->second, s.axis->GetMinValue(), s.axis->GetMaxValue(),
-	     fraction);
+      fraction = fontview::clamp(fraction, 0.0, 1.0);
+      s.slider->SetValue(static_cast<int>(fraction * 1000000));
     }
   }
 
