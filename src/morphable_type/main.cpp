@@ -185,11 +185,6 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
     wxSP_ARROW_KEYS, 1, 999, 12, 0.5);
   sizeControl_->SetMaxSize(wxSize(60, -1));
   stylePanelSizer->Add(sizeControl_, 0, wxALL, 0);
-  //{
-  // wxCommandEvent event;
-  //event.SetString(textSettings_->GetFamily());
-  //OnFamilyChanged(event);
-  //}
   OnTextSettingsChanged();
   familyChoice_->Bind(wxEVT_CHOICE, &MyFrame::OnFamilyChanged, this);
 }
@@ -229,7 +224,6 @@ void MyFrame::OnTextSettingsChanged() {
   }
   familyChoice_->SetStringSelection(textSettings_->GetFamily());
 
-  styleChoice_->Clear();
   std::vector<FontStyle*> styles;
   for (FontStyle* style : textSettings_->GetStyles()) {
     if (style->GetFamilyName() == textSettings_->GetFamily()) {
@@ -237,18 +231,29 @@ void MyFrame::OnTextSettingsChanged() {
     }
   }
   std::sort(styles.begin(), styles.end(),
-	    [](const FontStyle* a, const FontStyle* b) {
-              double va = a->GetWeight(), vb = b->GetWeight();
-	      if (va < vb) return true; else if (va > vb) return false;
-	      va = a->GetWidth(); vb = b->GetWidth();
-	      if (va < vb) return true; else if (va > vb) return false;
-	      va = a->GetSlant(); vb = b->GetSlant();
-	      if (va < vb) return true; else if (va > vb) return false;
-	      return a->GetStyleName() < b->GetStyleName();
-	    });
+            [](const FontStyle* a, const FontStyle* b) {
+      double va = a->GetWeight(), vb = b->GetWeight();
+      if (va < vb) return true; else if (va > vb) return false;
+      va = a->GetWidth(); vb = b->GetWidth();
+      if (va < vb) return true; else if (va > vb) return false;
+      va = a->GetSlant(); vb = b->GetSlant();
+      if (va < vb) return true; else if (va > vb) return false;
+      return a->GetStyleName() < b->GetStyleName();
+  });
+
+  styleChoice_->Clear();
+  int curStyleIndex = -1;
+  FontStyle* curStyle = textSettings_->GetStyle();
   for (FontStyle* style : styles) {
+    if (style == curStyle) {
+      curStyleIndex = static_cast<int>(styleChoice_->GetCount());
+    }
     styleChoice_->Append(style->GetStyleName(), static_cast<void*>(style));
   }
+  if (curStyleIndex >= 0) {
+    styleChoice_->SetSelection(curStyleIndex);
+  }
+
   processingModelChange_ = false;
 }
 

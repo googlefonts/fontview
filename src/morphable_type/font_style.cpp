@@ -10,9 +10,15 @@
 #include FT_TYPES_H
 
 #include "font_style.h"
+#include "font_var_axis.h"
 #include "name_table.h"
+#include "util.h"
 
 namespace fontview {
+
+static const FT_Tag weightTag = FT_MAKE_TAG('w', 'g', 'h', 't');
+static const FT_Tag widthTag = FT_MAKE_TAG('w', 'd', 't', 'h');
+static const FT_Tag slantTag = FT_MAKE_TAG('s', 'l', 'n', 't');
 
 std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
                                              const NameTable& names) {
@@ -33,21 +39,23 @@ std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
       const FT_Var_Named_Style& namedStyle = mmvar->namedstyle[i];
       const std::string& instanceName = GetFontName(names, namedStyle.strid);
       if (!instanceName.empty()) {
-	FontStyle::Variation variation;
-	bool isDefault = true;
+        FontStyle::Variation variation;
+        bool isDefault = true;
         for (FT_UInt axisIndex = 0; axisIndex < mmvar->num_axis;
              ++axisIndex) {
-	  const FT_Var_Axis& axis = mmvar->axis[axisIndex];
-	  variation[axis.tag] = namedStyle.coords[axisIndex] / 65536.0;
-	  if (namedStyle.coords[axisIndex] != axis.def) {
-	    isDefault = false;
-	  }
-	}
-	if (isDefault) {
-	  hasNamedInstanceForDefault = true;
-	}
-	result.push_back(
-          new FontStyle(face, familyName, instanceName, variation));
+          const FT_Var_Axis& ftAxis = mmvar->axis[axisIndex];
+          variation[ftAxis.tag] =
+              FTFixedToDouble(namedStyle.coords[axisIndex]);
+          if (namedStyle.coords[axisIndex] != ftAxis.def) {
+            isDefault = false;
+          }
+        }
+        if (isDefault) {
+          hasNamedInstanceForDefault = true;
+        }
+	std::vector<FontVarAxis*>* axes = FontVarAxis::MakeAxes(face, names);
+        result.push_back(
+          new FontStyle(face, familyName, instanceName, axes, variation));
       }
     }
   }
@@ -59,29 +67,21 @@ std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
       if (mmvar) {
         for (FT_UInt axisIndex = 0; axisIndex < mmvar->num_axis;
              ++axisIndex) {
-	  const FT_Var_Axis& axis = mmvar->axis[axisIndex];
-	  variation[axis.tag] = axis.def / 65536.0;
-	}
+          const FT_Var_Axis& axis = mmvar->axis[axisIndex];
+          variation[axis.tag] = FTFixedToDouble(axis.def);
+        }
       }
-      result.push_back(new FontStyle(face, familyName, styleName, variation));
+      std::vector<FontVarAxis*>* axes = FontVarAxis::MakeAxes(face, names);
+      result.push_back(
+          new FontStyle(face, familyName, styleName,
+                        axes, variation));
     }
   }
 
   return result;
 }
 
-static double clamp(double value, double min, double max) {
-  if (value < min) {
-    return min;
-  } else if (value > max) {
-    return max;
-  } else {
-    return value;
-  }
-}
-
 static double GetWeight(FT_Face face, const FontStyle::Variation& variation) {
-  const FT_Tag weightTag = FT_MAKE_TAG('w', 'g', 'h', 't');
   FontStyle::Variation::const_iterator iter = variation.find(weightTag);
   if (iter != variation.end()) {
     return iter->second;
@@ -112,7 +112,6 @@ static double GetWeight(FT_Face face, const FontStyle::Variation& variation) {
 
 
 static double GetWidth(FT_Face face, const FontStyle::Variation& variation) {
-  const FT_Tag widthTag = FT_MAKE_TAG('w', 'd', 't', 'h');
   FontStyle::Variation::const_iterator iter = variation.find(widthTag);
   if (iter != variation.end()) {
     return iter->second;
@@ -142,7 +141,6 @@ static double GetWidth(FT_Face face, const FontStyle::Variation& variation) {
 static double GetSlant(FT_Face face, const FontStyle::Variation& variation) {
   // TODO: It is undefined if negative values are leaning to the left or right.
   // Clarify with the OpenType working group, so the spec becomes clearer.
-  const FT_Tag slantTag = FT_MAKE_TAG('s', 'l', 'n', 't');
   FontStyle::Variation::const_iterator iter = variation.find(slantTag);
   if (iter != variation.end()) {
     return iter->second;  // TODO: Unclear if we should negate this value.
@@ -151,7 +149,7 @@ static double GetSlant(FT_Face face, const FontStyle::Variation& variation) {
   TT_Postscript* post =
     static_cast<TT_Postscript*>(FT_Get_Sfnt_Table(face, ft_sfnt_post));
   if (post) {
-    return -static_cast<int32_t>(post->italicAngle) / 65536.0;
+    return -FTFixedToDouble(post->italicAngle);
   }
 
   return 0;
@@ -160,15 +158,63 @@ static double GetSlant(FT_Face face, const FontStyle::Variation& variation) {
 FontStyle::FontStyle(FT_Face face,
                      const std::string& family,
                      const std::string& styleName,
+                     std::vector<FontVarAxis*>* axes,  // takes ownership
                      const Variation& variation)
   : face_(face), family_(family), name_(styleName),
     weight_(::fontview::GetWeight(face, variation)),
     width_(::fontview::GetWidth(face, variation)),
     slant_(::fontview::GetSlant(face, variation)),
-    variation_(variation) {
+    axes_(axes), variation_(variation) {
 }
 
 FontStyle::~FontStyle() {
+  for (FontVarAxis* axis : *axes_) {
+    delete axis;
+  }
+}
+
+// Helper for implementing FontStyle::GetDistance()
+static double GetVariationValue(const FontStyle::Variation& var,
+                                FT_Tag axisTag,
+                        	double defaultValue) {
+  FontStyle::Variation::const_iterator iter = var.find(axisTag);
+  if (iter != var.end()) {
+    return iter->second;
+  } else {
+    return defaultValue;
+  }
+}
+
+double FontStyle::GetDistance(const Variation& var) const {
+  // How to compute distance across multiple typographic axes?
+  // We treat it as an n-dimensional vector space and compute the
+  // standard cosine distance, which is the sum of the sqared distances
+  // for each dimension. For example, a weight difference between 400
+  // and 500 is counted as 10000 (100^2) while a width difference
+  // between 50 and 100 is counted as 2500 (50^2), so the the total
+  // distance would be 12500.
+  double result = 0;
+
+  double weightDelta = weight_ - GetVariationValue(var, weightTag, weight_);
+  result += weightDelta * weightDelta;
+
+  double widthDelta = width_ - GetVariationValue(var, widthTag, width_);
+  result += widthDelta * widthDelta;
+
+  double slantDelta = slant_ - GetVariationValue(var, slantTag, slant_);
+  result += slantDelta * slantDelta;
+
+  for (FontVarAxis* axis : *axes_) {
+    const FT_Tag axisTag = axis->GetTag();
+    if (axisTag == weightTag || axisTag == widthTag || axisTag == slantTag) {
+      continue;  // already taken into account
+    }
+    double delta = (axis->GetDefaultValue() - 
+                    GetVariationValue(var, axisTag, axis->GetDefaultValue()));
+    result += delta * delta;
+  }
+
+  return result;
 }
 
 }  // namespace fontview

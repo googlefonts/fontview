@@ -5,6 +5,7 @@
       'type': 'executable',
       'sources': [
         'font_style.cpp',
+        'font_var_axis.cpp',
         'main.cpp',
         'name_table.cpp',
         'text_settings.cpp',

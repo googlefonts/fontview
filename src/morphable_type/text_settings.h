@@ -27,17 +27,27 @@ class TextSettings {
   TextSettings();
   ~TextSettings();
 
+  // Listeners get notified after the model has changed.
   typedef std::function<void ()> Listener;
   void AddListener(Listener* l);
   void RemoveListener(Listener* l);
 
+  // Returns true upon success, false if the file could not be parsed.
   bool SetFontContainer(const std::string& path);
+
   const std::string& GetFontContainer() const { return fontContainerPath_; }
   const std::set<std::string>& GetFamilies() const { return families_; }
   const std::vector<FontStyle*>& GetStyles() const { return styles_; }
+  FontStyle* FindBestStyle(const std::string& family,
+			   const FontStyle::Variation& variation) const;
+
   const std::string& GetFamily() const { return family_; }
   void SetFamily(const std::string& family);
 
+  FontStyle* GetStyle() const { return style_; }
+  void SetStyle(FontStyle* style);
+
+  const FontStyle::Variation& GetVariation() const { return variation_; }
 
  private:
   void Clear();
@@ -50,6 +60,8 @@ class TextSettings {
   std::vector<FontStyle*> styles_;
   std::set<std::string> families_;
   std::string family_;
+  FontStyle* style_;
+  FontStyle::Variation variation_;
 };
 
 }  // namespace fontview

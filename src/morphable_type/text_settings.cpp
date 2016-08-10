@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
@@ -9,6 +10,7 @@
 #include FT_FREETYPE_H
 
 #include "font_style.h"
+#include "font_var_axis.h"
 #include "name_table.h"
 #include "text_settings.h"
 
@@ -39,7 +41,9 @@ static std::vector<FT_Face>* LoadFaces(const std::string& path) {
 }
 
 
-TextSettings::TextSettings() {}
+TextSettings::TextSettings() {
+  Clear();
+}
 
 TextSettings::~TextSettings() {
   Clear();
@@ -78,8 +82,31 @@ bool TextSettings::SetFontContainer(const std::string& path) {
     }
   }
 
+  variation_[FontVarAxis::weightTag] = 400;
+  variation_[FontVarAxis::widthTag] = 100;
+  variation_[FontVarAxis::slantTag] = 0;
+  style_ = FindBestStyle(family_, variation_);
+
   NotifyListeners();
   return true;
+}
+
+FontStyle* TextSettings::FindBestStyle(
+    const std::string& family,
+    const FontStyle::Variation& variation) const {
+  FontStyle* bestStyle = NULL;
+  double bestDistance = std::numeric_limits<double>::infinity();
+  for (FontStyle* style : styles_) {
+    if (style->GetFamilyName() != family) {
+      continue;
+    }
+    double distance = style->GetDistance(variation);
+    if (distance < bestDistance) {
+      bestStyle = style;
+      bestDistance = distance;
+    }
+  }
+  return bestStyle;
 }
 
 void TextSettings::SetFamily(const std::string& family) {
@@ -88,20 +115,44 @@ void TextSettings::SetFamily(const std::string& family) {
   }
 
   family_ = family;
+  style_ = FindBestStyle(family_, variation_);
+  NotifyListeners();
+}
+
+void TextSettings::SetStyle(FontStyle* style) {
+  if (style == style_) {
+    return;
+  }
+
+  // Reject FontStyles that are not owned by us.
+  if (style != NULL &&
+      std::find(styles_.begin(), styles_.end(), style) == styles_.end()) {
+    return;
+  }
+
+  style_ = style;
   NotifyListeners();
 }
 
 void TextSettings::Clear() {
+  variation_.clear();
+  style_ = NULL;
   family_.clear();
   families_.clear();
 
-  for (FontStyle* style : styles_) delete style;
+  for (FontStyle* style : styles_) {
+    delete style;
+  }
   styles_.clear();
 
-  for (NameTable* table : faceNameTables_) delete table;
+  for (NameTable* table : faceNameTables_) {
+    delete table;
+  }
   faceNameTables_.clear();
 
-  for (FT_Face face : faces_) delete face;
+  for (FT_Face face : faces_) {
+    FT_Done_Face(face);
+  }
   faces_.clear();
 
   fontContainerPath_.clear();
