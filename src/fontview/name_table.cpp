@@ -1,14 +1,14 @@
 #include <map>
 #include <string>
 
-#include "name_table.h"
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
 
 #include <wx/string.h>
+
+#include "fontview/name_table.h"
 
 namespace fontview {
 

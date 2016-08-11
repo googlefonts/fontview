@@ -16,11 +16,11 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include "name_table.h"
-#include "font_style.h"
-#include "font_var_axis.h"
-#include "text_settings.h"
-#include "util.h"
+#include "fontview/name_table.h"
+#include "fontview/font_style.h"
+#include "fontview/font_var_axis.h"
+#include "fontview/text_settings.h"
+#include "fontview/util.h"
 
 using fontview::FontStyle;
 using fontview::FontVarAxis;

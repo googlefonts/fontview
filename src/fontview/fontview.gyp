@@ -10,6 +10,9 @@
         'name_table.cpp',
         'text_settings.cpp',
       ],
+      'include_dirs': [
+        '..',
+      ],
       'dependencies': [
         '../third_party/freetype/freetype.gyp:freetype',
         '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',

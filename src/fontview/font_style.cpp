@@ -9,10 +9,10 @@
 #include FT_TRUETYPE_TABLES_H
 #include FT_TYPES_H
 
-#include "font_style.h"
-#include "font_var_axis.h"
-#include "name_table.h"
-#include "util.h"
+#include "fontview/font_style.h"
+#include "fontview/font_var_axis.h"
+#include "fontview/name_table.h"
+#include "fontview/util.h"
 
 namespace fontview {
 

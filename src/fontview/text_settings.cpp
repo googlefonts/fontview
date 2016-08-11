@@ -9,10 +9,10 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include "font_style.h"
-#include "font_var_axis.h"
-#include "name_table.h"
-#include "text_settings.h"
+#include "fontview/font_style.h"
+#include "fontview/font_var_axis.h"
+#include "fontview/name_table.h"
+#include "fontview/text_settings.h"
 
 namespace fontview {
 
