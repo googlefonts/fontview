@@ -63,6 +63,7 @@ bool TextSettings::SetFontContainer(const std::string& path) {
     return false;
   }
   Clear();
+  fontContainerPath_ = path;
   for (FT_Face face : *faces) {
     faces_.push_back(face);
     faceNameTables_.push_back(BuildNameTable(face));

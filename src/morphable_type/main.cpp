@@ -42,7 +42,7 @@ class MyApp : public wxApp {
 
 class MyFrame : public wxFrame {
  public:
-  MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
+  MyFrame(const wxPoint& pos, const wxSize& size,
           TextSettings* textSettings);  // takes ownership
   virtual ~MyFrame();
 
@@ -121,8 +121,7 @@ void MyApp::MacOpenFile(const wxString& path) {
 
   ++numDocuments_;
   wxPoint pos(16 * numDocuments_, 20 + 16 * numDocuments_);
-  wxFileName filename(path);
-  MyFrame* frame = new MyFrame(filename.GetFullName(), pos, wxSize(600, 340),
+  MyFrame* frame = new MyFrame(pos, wxSize(600, 340),
                                textSettings.release());
   frame->Show(true);
 }
@@ -138,9 +137,9 @@ bool MyApp::OnInit() {
   return OpenFontFile(NULL);
 }
 
-MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size,
+MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
                  TextSettings* textSettings)
-  : wxFrame(NULL, wxID_ANY, title, pos, size),
+  : wxFrame(NULL, wxID_ANY, "", pos, size),
     textSettings_(textSettings),
     textSettingsListener_([this]() { this->OnTextSettingsChanged(); }),
     propertyPanel_(NULL),
@@ -234,6 +233,10 @@ void MyFrame::OnAbout(wxCommandEvent& event) {
 
 void MyFrame::OnTextSettingsChanged() {
   processingModelChange_ = true;
+
+  wxFileName filename(textSettings_->GetFontContainer());
+  SetTitle(filename.GetFullName());
+
   familyChoice_->Clear();
   for (const std::string& family : textSettings_->GetFamilies()) {
     familyChoice_->Append(wxString(family));
