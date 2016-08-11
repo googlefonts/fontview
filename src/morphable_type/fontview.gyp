@@ -1,7 +1,7 @@
 {
   'targets': [
     {
-      'target_name': 'morphable_type',
+      'target_name': 'fontview',
       'type': 'executable',
       'sources': [
         'font_style.cpp',
