@@ -7,3 +7,6 @@
 [submodule "src/third_party/wxWidgets/wxWidgets"]
 	path = src/third_party/wxWidgets/wxWidgets
 	url = https://github.com/wxWidgets/wxWidgets.git
+[submodule "src/third_party/harfbuzz/harfbuzz"]
+	path = src/third_party/harfbuzz/harfbuzz
+	url = https://github.com/behdad/harfbuzz.git
