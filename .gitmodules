@@ -10,3 +10,6 @@
 [submodule "src/third_party/harfbuzz/harfbuzz"]
 	path = src/third_party/harfbuzz/harfbuzz
 	url = https://github.com/behdad/harfbuzz.git
+[submodule "src/third_party/fribidi/fribidi"]
+	path = src/third_party/fribidi/fribidi
+	url = https://anongit.freedesktop.org/git/fribidi/fribidi.git
