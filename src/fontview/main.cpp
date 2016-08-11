@@ -113,7 +113,7 @@ bool MyApp::OpenFontFile(wxWindow* parent) {
 void MyApp::MacOpenFile(const wxString& path) {
   std::unique_ptr<TextSettings> textSettings(new TextSettings());
   if (!textSettings->SetFontContainer(path.ToStdString())) {
-    wxMessageBox("Morphable Type does not understand "
+    wxMessageBox("FontView does not understand "
                  "the format of the selected file.",
                  "Unsupported File Format", wxOK | wxICON_ERROR);
     return;
@@ -127,7 +127,7 @@ void MyApp::MacOpenFile(const wxString& path) {
 }
 
 bool MyApp::OnInit() {
-  SetAppDisplayName(wxT("Morphable Type"));
+  SetAppDisplayName(wxT("FontView"));
   if (FT_Init_FreeType(&freeTypeLibrary_)) {
     wxMessageBox("The FreeType library could not be initialized.",
                  "FreeType Error", wxOK | wxICON_ERROR);
@@ -155,7 +155,7 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   fileMenu->AppendSeparator();
   fileMenu->Append(wxID_EXIT);
   wxMenu* helpMenu = new wxMenu();
-  helpMenu->Append(wxID_ABOUT, wxT("About Morphable Type"));
+  helpMenu->Append(wxID_ABOUT, wxT("About FontView"));
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
   menuBar->Append(helpMenu, "&Help");
