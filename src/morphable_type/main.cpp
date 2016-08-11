@@ -144,7 +144,7 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
     textSettingsListener_([this]() { this->OnTextSettingsChanged(); }),
     propertyPanel_(NULL),
     familyChoice_(NULL), styleChoice_(NULL), sizeControl_(NULL),
-    axisSizer_(new wxGridBagSizer()) {
+    axisSizer_(new wxGridBagSizer(0, 4)) {
   textSettings_->AddListener(&textSettingsListener_);
 
   wxMenu* fileMenu = new wxMenu();
@@ -200,7 +200,9 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   sizeControl_->SetMaxSize(wxSize(60, -1));
   stylePanelSizer->Add(sizeControl_, 0, wxALL, 0);
 
-  axisSizer_->Add(0, 10, wxGBPosition(0, 0), wxDefaultSpan);
+  axisSizer_->Add(0, 15, wxGBPosition(0, 0), wxDefaultSpan);  // Spacer above.
+  axisSizer_->Add(0, 15, wxGBPosition(0, 1), wxDefaultSpan);  // Spacer above.
+  axisSizer_->AddGrowableCol(0, 0);
 
   OnTextSettingsChanged();
   familyChoice_->Bind(wxEVT_CHOICE, &MyFrame::OnFamilyChoiceChanged, this);
