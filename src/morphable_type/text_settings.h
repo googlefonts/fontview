@@ -48,6 +48,7 @@ class TextSettings {
   void SetStyle(FontStyle* style);
 
   const FontStyle::Variation& GetVariation() const { return variation_; }
+  void SetVariation(const FontStyle::Variation& v);
 
  private:
   void Clear();

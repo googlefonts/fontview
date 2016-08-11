@@ -110,18 +110,23 @@ FontStyle* TextSettings::FindBestStyle(
 }
 
 void TextSettings::SetFamily(const std::string& family) {
-  if (family == family_) {
-    return;
+  if (family != family_) {
+    family_ = family;
+    style_ = FindBestStyle(family_, variation_);
+    NotifyListeners();
   }
-
-  family_ = family;
-  style_ = FindBestStyle(family_, variation_);
-  NotifyListeners();
 }
 
 
 void TextSettings::SetStyle(FontStyle* style) {
   if (SetStyleWithoutNotification(style)) {
+    NotifyListeners();
+  }
+}
+
+void TextSettings::SetVariation(const FontStyle::Variation& v) {
+  if (v != variation_) {
+    variation_ = v;
     NotifyListeners();
   }
 }

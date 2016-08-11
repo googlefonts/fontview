@@ -54,6 +54,7 @@ class MyFrame : public wxFrame {
   void OnAbout(wxCommandEvent& event);
   void OnFamilyChoiceChanged(wxCommandEvent& event);
   void OnStyleChoiceChanged(wxCommandEvent& event);
+  void OnAxisSliderChanged(wxCommandEvent& event);
   void OnTextSettingsChanged();
   bool ShouldRebuildAxisSliders() const;
   void RebuildAxisSliders();
@@ -232,9 +233,6 @@ void MyFrame::OnAbout(wxCommandEvent& event) {
 }
 
 void MyFrame::OnTextSettingsChanged() {
-  printf("MyFrame::OnTextSettingsChanged\n"
-         "  family: %s\n", textSettings_->GetFamily().c_str());
-
   processingModelChange_ = true;
   familyChoice_->Clear();
   for (const std::string& family : textSettings_->GetFamilies()) {
@@ -263,13 +261,28 @@ void MyFrame::OnTextSettingsChanged() {
   int curStyleIndex = -1;
   FontStyle* curStyle = textSettings_->GetStyle();
   for (FontStyle* style : styles) {
-    if (style == curStyle) {
+    if (style == curStyle &&
+        style->GetVariation() == textSettings_->GetVariation()) {
       curStyleIndex = static_cast<int>(styleChoice_->GetCount());
     }
     styleChoice_->Append(style->GetStyleName(), static_cast<void*>(style));
   }
   if (curStyleIndex >= 0) {
     styleChoice_->SetSelection(curStyleIndex);
+  } else {
+    // TODO: At least on MacOS, we should add a separator line here.
+    // However, wxWidgets does not support separators inside wxChoices yet.
+    // https://groups.google.com/forum/#!topic/wxpython-users/1q0M0xTHpv8
+    // http://www.yqcomputer.com/1171_2386_1.htm
+    // http://trac.wxwidgets.org/ticket/11130
+    //
+    // http://trac.wxwidgets.org/ticket/10438
+    // (This ticket claims that "-" produces a separator on OSX,
+    // but this does not actually work on MacOS X 10.11.6)
+    //
+    // styleChoice_->Append(std::string("-"), static_cast<void*>(NULL));
+    styleChoice_->Append(std::string("Custom"), static_cast<void*>(NULL));
+    styleChoice_->SetSelection(styleChoice_->GetCount() - 1);
   }
 
   if (ShouldRebuildAxisSliders()) {
@@ -334,6 +347,7 @@ void MyFrame::RebuildAxisSliders() {
       axisSliders_.push_back(s);
       axisSizer_->Add(s.title, wxGBPosition(row, 0), wxDefaultSpan);
       axisSizer_->Add(s.slider, wxGBPosition(row, 1), wxDefaultSpan);
+      s.slider->Bind(wxEVT_SLIDER, &MyFrame::OnAxisSliderChanged, this);
       ++row;
     }
   }
@@ -354,6 +368,17 @@ void MyFrame::OnStyleChoiceChanged(wxCommandEvent& event) {
       textSettings_->SetStyle(style);
     }
   }
+}
+
+void MyFrame::OnAxisSliderChanged(wxCommandEvent& event) {
+  FontStyle::Variation var;
+  for (const AxisSlider& s : axisSliders_) {
+    double range = s.axis->GetMaxValue() - s.axis->GetMinValue();
+    double fraction = static_cast<double>(s.slider->GetValue()) / 1000000;
+    double value = s.axis->GetMinValue() + fraction * range;
+    var[s.axis->GetTag()] = value;
+  }
+  textSettings_->SetVariation(var);
 }
 
 wxIMPLEMENT_APP(MyApp);
