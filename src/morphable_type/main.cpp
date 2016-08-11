@@ -198,6 +198,7 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
     stylePanel, wxID_ANY, wxT("12"), wxDefaultPosition, wxDefaultSize,
     wxSP_ARROW_KEYS, 1, 999, 12, 0.5);
   sizeControl_->SetMaxSize(wxSize(60, -1));
+  sizeControl_->SetDigits(1);  // 1 digit fractional precision, eg. 12.5 pt.
   stylePanelSizer->Add(sizeControl_, 0, wxALL, 0);
 
   axisSizer_->Add(0, 15, wxGBPosition(0, 0), wxDefaultSpan);  // Spacer above.
