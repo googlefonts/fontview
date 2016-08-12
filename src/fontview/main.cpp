@@ -19,13 +19,14 @@
 #include "fontview/name_table.h"
 #include "fontview/font_style.h"
 #include "fontview/font_var_axis.h"
+#include "fontview/sample_text.h"
 #include "fontview/text_settings.h"
 #include "fontview/util.h"
 
 using fontview::FontStyle;
 using fontview::FontVarAxis;
+using fontview::SampleText;
 using fontview::TextSettings;
-
 
 class MyApp : public wxApp {
  public:
@@ -65,6 +66,7 @@ class MyFrame : public wxFrame {
   bool processingModelChange_;
 
   // These wxWidgets objects are owned by wxWidgets, not by us.
+  SampleText* sampleText_;
   wxPanel* propertyPanel_;
   wxChoice* familyChoice_;
   wxChoice* styleChoice_;
@@ -142,7 +144,7 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   : wxFrame(NULL, wxID_ANY, "", pos, size),
     textSettings_(textSettings),
     textSettingsListener_([this]() { this->OnTextSettingsChanged(); }),
-    propertyPanel_(NULL),
+    sampleText_(NULL), propertyPanel_(NULL),
     familyChoice_(NULL), styleChoice_(NULL), sizeControl_(NULL),
     axisSizer_(new wxGridBagSizer(0, 4)) {
   textSettings_->AddListener(&textSettingsListener_);
@@ -162,17 +164,18 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   SetMenuBar(menuBar);
 
   wxPanel* framePanel = new wxPanel(this);
-  wxPanel* textPanel = new wxPanel(framePanel);
+  sampleText_ = new SampleText(framePanel);
+  sampleText_->SetText("The quick brown fox jumps over the lazy dog.");
   propertyPanel_ = new wxPanel(framePanel);
   wxPanel* stylePanel = new wxPanel(propertyPanel_);
   wxBoxSizer* framePanelSizer = new wxBoxSizer(wxHORIZONTAL);
   wxBoxSizer* propertyPanelSizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer* stylePanelSizer = new wxBoxSizer(wxHORIZONTAL);
 
-  textPanel->SetBackgroundColour(wxColour(wxT("#ffffff")));
+  sampleText_->SetBackgroundColour(wxColour(wxT("#ffffff")));
 
   framePanel->SetSizer(framePanelSizer);
-  framePanelSizer->Add(textPanel, 1, wxEXPAND | wxALL, 0);
+  framePanelSizer->Add(sampleText_, 1, wxEXPAND | wxALL, 0);
   framePanelSizer->Add(propertyPanel_, 0, wxEXPAND | wxALL, 20);
 
   propertyPanel_->SetSizer(propertyPanelSizer);
@@ -236,7 +239,7 @@ void MyFrame::OnAbout(wxCommandEvent& event) {
 
 void MyFrame::OnTextSettingsChanged() {
   processingModelChange_ = true;
-
+  sampleText_->SetFontFace(textSettings_->GetFace());
   wxFileName filename(textSettings_->GetFontContainer());
   SetTitle(filename.GetFullName());
 

@@ -92,6 +92,27 @@ bool TextSettings::SetFontContainer(const std::string& path) {
   return true;
 }
 
+FT_Face TextSettings::GetFace() {
+  if (!style_) {
+    return NULL;
+  }
+
+  FT_Face face = style_->GetFace();
+  FT_Set_Char_Size(face, face->units_per_EM, 0, 0, 0);
+  for (const FontVarAxis* axis : style_->GetAxes()) {
+    FT_Tag tag = axis->GetTag();
+    FontStyle::Variation::const_iterator iter = variation_.find(tag);
+    FT_Tag tagstring[2];
+    tagstring[0] = tag;
+    tagstring[1] = 0;
+    if (iter != variation_.end()) {
+      printf("axis %s: %f\n", reinterpret_cast<char*>(tagstring),
+	     iter->second);
+    }
+  }
+  return face;
+}
+
 FontStyle* TextSettings::FindBestStyle(
     const std::string& family,
     const FontStyle::Variation& variation) const {

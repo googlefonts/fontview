@@ -20,6 +20,7 @@ class FontStyle {
       FT_Face face, const NameTable& names);
   ~FontStyle();
 
+  FT_Face GetFace() const { return face_; }
   const std::string& GetFamilyName() const { return family_; }
   const std::string& GetStyleName() const { return name_; }
   double GetWeight() const { return weight_; }

@@ -34,8 +34,11 @@ class TextSettings {
 
   // Returns true upon success, false if the file could not be parsed.
   bool SetFontContainer(const std::string& path);
-
   const std::string& GetFontContainer() const { return fontContainerPath_; }
+
+  // Returns a FreeType face configured for the current settings.
+  FT_Face GetFace();
+
   const std::set<std::string>& GetFamilies() const { return families_; }
   const std::vector<FontStyle*>& GetStyles() const { return styles_; }
   FontStyle* FindBestStyle(const std::string& family,

@@ -8,6 +8,7 @@
         'font_var_axis.cpp',
         'main.cpp',
         'name_table.cpp',
+        'sample_text.cpp',
         'text_settings.cpp',
       ],
       'include_dirs': [

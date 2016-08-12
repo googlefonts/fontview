@@ -47,6 +47,7 @@
                 'harfbuzz/src/hb-shape.cc',
                 'harfbuzz/src/hb-shaper.cc',
                 'harfbuzz/src/hb-ucdn.cc',
+                'harfbuzz/src/hb-ucdn/ucdn.c',
                 'harfbuzz/src/hb-unicode.cc',
                 #'harfbuzz/src/hb-uniscribe.cc',
                 'harfbuzz/src/hb-warning.cc',
