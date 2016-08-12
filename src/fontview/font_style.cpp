@@ -202,6 +202,29 @@ static double GetVariationValue(const FontStyle::Variation& var,
   }
 }
 
+FT_Face FontStyle::GetFace(const FontStyle::Variation& variation) const {
+  FT_Face face = face_;
+
+  FT_Multi_Master mmtype1;
+  bool isMMType1 = (FT_Get_Multi_Master(face, &mmtype1) == 0);
+
+  FT_Fixed coords[axes_->size()];
+  for (size_t axisIndex = 0; axisIndex < axes_->size(); ++axisIndex) {
+    const FontVarAxis* axis = axes_->at(axisIndex);
+    double value = GetVariationValue(
+        variation, axis->GetTag(), axis->GetDefaultValue());
+    value = clamp(value, axis->GetMinValue(), axis->GetMaxValue());
+    if (isMMType1) {
+      coords[axisIndex] = static_cast<FT_Fixed>(value + 0.5);
+    } else {
+      coords[axisIndex] = FTDoubleToFixed(value);
+    }
+  }
+  FT_Set_Var_Design_Coordinates(face, axes_->size(), coords);
+
+  return face;
+}
+
 double FontStyle::GetDistance(const Variation& var) const {
   // How to compute distance across multiple typographic axes?
   // We treat it as an n-dimensional vector space and compute the

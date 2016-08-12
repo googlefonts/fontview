@@ -97,19 +97,10 @@ FT_Face TextSettings::GetFace() {
     return NULL;
   }
 
-  FT_Face face = style_->GetFace();
+  FT_Face face = style_->GetFace(variation_);
+  // TODO: Figure out what unit to use here.
+  // Probably it depends on the screen resolution.
   FT_Set_Char_Size(face, face->units_per_EM, 0, 0, 0);
-  for (const FontVarAxis* axis : style_->GetAxes()) {
-    FT_Tag tag = axis->GetTag();
-    FontStyle::Variation::const_iterator iter = variation_.find(tag);
-    FT_Tag tagstring[2];
-    tagstring[0] = tag;
-    tagstring[1] = 0;
-    if (iter != variation_.end()) {
-      printf("axis %s: %f\n", reinterpret_cast<char*>(tagstring),
-	     iter->second);
-    }
-  }
   return face;
 }
 

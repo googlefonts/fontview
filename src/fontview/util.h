@@ -14,6 +14,10 @@ inline double FTFixedToDouble(FT_Fixed value) {
   return static_cast<FT_Int32>(value) / 65536.0;
 }
 
+inline FT_Fixed FTDoubleToFixed(double value) {
+  return static_cast<FT_Fixed>(value * 65536);
+}
+
 inline double clamp(double value, double min, double max) {
   if (value < min) {
     return min;
