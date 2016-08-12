@@ -69,6 +69,9 @@ class TextSettings {
   const FontStyle::Variation& GetVariation() const { return variation_; }
   void SetVariation(const FontStyle::Variation& v);
 
+  double GetFontSize() const { return fontSize_; }
+  void SetFontSize(double size);
+
  private:
   void Clear();
   bool SetStyleWithoutNotification(FontStyle* style);
@@ -83,6 +86,7 @@ class TextSettings {
   std::string family_;
   FontStyle* style_;
   FontStyle::Variation variation_;
+  double fontSize_;
 };
 
 }  // namespace fontview

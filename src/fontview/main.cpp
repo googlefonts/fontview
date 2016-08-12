@@ -71,6 +71,7 @@ class MyFrame : public wxFrame {
   void OnAbout(wxCommandEvent& event);
   void OnFamilyChoiceChanged(wxCommandEvent& event);
   void OnStyleChoiceChanged(wxCommandEvent& event);
+  void OnFontSizeFieldChanged(wxSpinDoubleEvent& event);
   void OnAxisSliderChanged(wxCommandEvent& event);
   void OnTextSettingsChanged();
   bool ShouldRebuildAxisSliders() const;
@@ -227,6 +228,8 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   OnTextSettingsChanged();
   familyChoice_->Bind(wxEVT_CHOICE, &MyFrame::OnFamilyChoiceChanged, this);
   styleChoice_->Bind(wxEVT_CHOICE, &MyFrame::OnStyleChoiceChanged, this);
+  sizeControl_->Bind(wxEVT_SPINCTRLDOUBLE, &MyFrame::OnFontSizeFieldChanged,
+                     this);
 }
 
 MyFrame::~MyFrame() {
@@ -325,6 +328,7 @@ void MyFrame::OnTextSettingsChanged() {
     }
   }
 
+  sizeControl_->SetValue(textSettings_->GetFontSize());
   processingModelChange_ = false;
 }
 
@@ -404,6 +408,10 @@ void MyFrame::OnAxisSliderChanged(wxCommandEvent& event) {
     var[s.axis->GetTag()] = value;
   }
   textSettings_->SetVariation(var);
+}
+
+void MyFrame::OnFontSizeFieldChanged(wxSpinDoubleEvent& event) {
+  textSettings_->SetFontSize(event.GetValue());
 }
 
 wxIMPLEMENT_APP(MyApp);

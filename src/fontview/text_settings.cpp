@@ -29,6 +29,7 @@
 #include "fontview/font_var_axis.h"
 #include "fontview/name_table.h"
 #include "fontview/text_settings.h"
+#include "fontview/util.h"
 
 namespace fontview {
 
@@ -114,9 +115,8 @@ FT_Face TextSettings::GetFace() {
   }
 
   FT_Face face = style_->GetFace(variation_);
-  // TODO: Figure out what unit to use here.
-  // Probably it depends on the screen resolution.
-  FT_Set_Char_Size(face, face->units_per_EM, 0, 0, 0);
+  FT_Set_Char_Size(face, static_cast<FT_F26Dot6>(fontSize_ * 64 + 0.5), 0,
+                   0, 0);
   return face;
 }
 
@@ -160,6 +160,14 @@ void TextSettings::SetVariation(const FontStyle::Variation& v) {
   }
 }
 
+void TextSettings::SetFontSize(double size) {
+  size = clamp(size, 1, 1000);
+  if (size != fontSize_) {
+    fontSize_ = size;
+    NotifyListeners();
+  }
+}
+
 bool TextSettings::SetStyleWithoutNotification(FontStyle* style) {
   if (style == style_) {
     return false;
@@ -181,6 +189,7 @@ bool TextSettings::SetStyleWithoutNotification(FontStyle* style) {
 }
 
 void TextSettings::Clear() {
+  fontSize_ = 11.0;
   variation_.clear();
   style_ = NULL;
   family_.clear();
