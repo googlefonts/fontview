@@ -5,6 +5,8 @@
             'type': 'static_library',
 	    'defines': ['HAVE_CONFIG_H'],
             'sources': [
+                'fribidi/charset/fribidi-char-sets.c',
+                'fribidi/charset/fribidi-char-sets-utf8.c',
                 'fribidi/lib/fribidi-arabic.c',
                 'fribidi/lib/fribidi-bidi-types.c',
                 'fribidi/lib/fribidi-bidi.c',
@@ -17,13 +19,18 @@
                 'fribidi/lib/fribidi.c',
             ],
             'include_dirs': [
-                'include',
+                'fribidi/charset',
                 'fribidi/lib',
                 'generated',
+                'internal_config',
+                'include',
             ],
             'direct_dependent_settings': {
                 'include_dirs': [
+                    'fribidi/charset',
                     'fribidi/lib',
+                    'generated',
+                    'include',
                 ],
             },
         },
@@ -35,8 +42,10 @@
                 'fribidi/gen.tab/gen-unicode-version.c',
             ],
             'include_dirs': [
-                'include',
                 'fribidi/lib',
+                'generated',
+                'include',
+                'internal_config',
             ],
         },
         {
@@ -48,9 +57,10 @@
                 'fribidi/gen.tab/packtab.c',
             ],
             'include_dirs': [
-                'include',
                 'fribidi/lib',
                 'generated',
+                'include',
+                'internal_config',
             ],
         },
         {
@@ -62,9 +72,10 @@
                 'fribidi/gen.tab/packtab.c',
             ],
             'include_dirs': [
-                'include',
                 'fribidi/lib',
                 'generated',
+                'include',
+                'internal_config',
             ],
         },
         {
@@ -76,9 +87,10 @@
                 'fribidi/gen.tab/packtab.c',
             ],
             'include_dirs': [
-                'include',
                 'fribidi/lib',
                 'generated',
+                'include',
+                'internal_config',
             ],
         },
         {
@@ -90,9 +102,10 @@
                 'fribidi/gen.tab/packtab.c',
             ],
             'include_dirs': [
-                'include',
                 'fribidi/lib',
                 'generated',
+                'include',
+                'internal_config',
             ],
         },
     ],

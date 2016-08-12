@@ -13,3 +13,6 @@
 [submodule "src/third_party/fribidi/fribidi"]
 	path = src/third_party/fribidi/fribidi
 	url = https://anongit.freedesktop.org/git/fribidi/fribidi.git
+[submodule "src/third_party/raqm/libraqm"]
+	path = src/third_party/raqm/libraqm
+	url = https://github.com/HOST-Oman/libraqm.git
