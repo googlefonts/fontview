@@ -28,7 +28,7 @@
 
 namespace fontview {
 
-class SampleText : public wxControl {
+class SampleText : public wxScrolledCanvas {
  public:
   SampleText(wxWindow* parent);
   virtual ~SampleText();

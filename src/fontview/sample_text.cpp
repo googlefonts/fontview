@@ -27,7 +27,7 @@
 namespace fontview {
 
 SampleText::SampleText(wxWindow* parent)
-  : wxControl(parent, wxID_ANY),
+  : wxScrolledCanvas(parent, wxID_ANY),
     fontFace_(NULL),
     raqm_(raqm_create()) {
 }
@@ -59,7 +59,7 @@ void SampleText::LayoutContent() {
   if (numGlyphs > 0) {
     size_t i = numGlyphs - 1;
     printf("  glyphs[%lu]: advance=(%d,%d)\n",
-	   i, glyphs[i].x_advance, glyphs[i].y_advance);
+           i, glyphs[i].x_advance, glyphs[i].y_advance);
   }
   // TODO: Destroy glyphs?
 }
