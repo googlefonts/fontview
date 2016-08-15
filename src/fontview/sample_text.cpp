@@ -17,6 +17,7 @@
 #include <string>
 
 #include <ft2build.h>
+#include FT_BITMAP_H
 #include FT_FREETYPE_H
 
 #include <raqm.h>
@@ -66,31 +67,71 @@ void SampleText::OnPaint(wxPaintEvent& event) {
   Paint(dc);
 }
 
+static bool GetGlyphImage(FT_Face face, FT_UInt glyph, wxImage* image) {
+  if (!face || !image ||
+      FT_Load_Glyph(face, glyph, FT_LOAD_RENDER|FT_LOAD_COLOR)) {
+    return false;
+  }
+
+  if (!face->glyph || face->glyph->format != FT_GLYPH_FORMAT_BITMAP) {
+    return false;
+  }
+
+  const size_t width = face->glyph->bitmap.width;
+  const size_t height = face->glyph->bitmap.rows;
+  if (width == 0 || height == 0) {
+    return false;
+  }
+
+  FT_Bitmap bitmap;
+  FT_Bitmap_Init(&bitmap);
+  FT_Bitmap_Convert(face->glyph->library, &face->glyph->bitmap, &bitmap, 1);
+  const size_t numBytes = width * height * 4;
+  unsigned char* data = static_cast<unsigned char*>(malloc(numBytes));
+  unsigned char* alpha = data + width * height * 3;
+  bzero(data, width * height * 3);
+  memcpy(alpha, bitmap.buffer, width * height);
+  FT_Bitmap_Done(face->glyph->library, &bitmap);
+
+  image->SetData(data, width, height, false);
+  image->SetAlpha(alpha, true);
+
+  return true;
+}
+
 void SampleText::Paint(wxDC& dc) {
   if (!fontFace_ || !raqm_ || !dc.IsOk()) {
     return;
   }
 
   dc.Clear();
-  const wxSize resolution = dc.GetPPI();  // pixels per inch
-  FT_Set_Char_Size(fontFace_, static_cast<FT_F26Dot6>(fontSize_ * 64 + 0.5),
-                   0, resolution.x, resolution.y);
-  raqm_set_freetype_face(raqm_, fontFace_);
-  if (!raqm_layout(raqm_)) {
+  const wxSize dpi = dc.GetPPI();  // dots/pixels per inch
+  const FT_F26Dot6 size = static_cast<FT_F26Dot6>(fontSize_ * 64 + 0.5);
+  if (FT_Set_Char_Size(fontFace_, size, size, dpi.x, dpi.y)) {
+    return;
+  }
+
+  if (!raqm_set_freetype_face(raqm_, fontFace_) || !raqm_layout(raqm_)) {
     return;
   }
 
   const double ascender = fontSize_ *
-    (static_cast<double>(fontFace_->ascender) /
-     static_cast<double>(fontFace_->units_per_EM));
+      (static_cast<double>(fontFace_->ascender) /
+       static_cast<double>(fontFace_->units_per_EM));
   size_t numGlyphs = 0;
   raqm_glyph_t* glyphs = raqm_get_glyphs(raqm_, &numGlyphs);
-  double x = 2, y = 2 + ceil(ascender);
+  double x = 2, y = 2 + ascender;
+  wxImage image;
   for (size_t i = 0; i < numGlyphs; ++i) {
-    double glyphX = x + glyphs[i].x_offset / 64.0;
-    double glyphY = y + glyphs[i].y_offset / 64.0;
-    dc.DrawPoint(glyphX, glyphY);
-    //printf("%lu %.1f %.1f\n", i, glyphX, glyphY);
+    if (GetGlyphImage(glyphs[i].ftface, glyphs[i].index, &image)) {
+      wxBitmap bitmap(image, dc.GetDepth());
+      wxCoord glyphX = x + glyphs[i].x_offset / 64.0 + 0.5;
+      wxCoord glyphY = y + glyphs[i].y_offset / 64.0 + 0.5;
+      dc.DrawBitmap(bitmap,
+                    glyphX + fontFace_->glyph->bitmap_left,
+                    glyphY - fontFace_->glyph->bitmap_top,
+                    false);  // useMask
+    }
     x += glyphs[i].x_advance / 64.0;
     y += glyphs[i].y_advance / 64.0;
   }
