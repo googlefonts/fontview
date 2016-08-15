@@ -227,18 +227,23 @@ FT_Face FontStyle::GetFace(const FontStyle::Variation& variation) const {
   bool isMMType1 = (FT_Get_Multi_Master(face, &mmtype1) == 0);
 
   FT_Fixed coords[axes_->size()];
+  FT_Long mmType1Coords[axes_->size()];
   for (size_t axisIndex = 0; axisIndex < axes_->size(); ++axisIndex) {
     const FontVarAxis* axis = axes_->at(axisIndex);
     double value = GetVariationValue(
         variation, axis->GetTag(), axis->GetDefaultValue());
     value = clamp(value, axis->GetMinValue(), axis->GetMaxValue());
     if (isMMType1) {
-      coords[axisIndex] = static_cast<FT_Fixed>(value + 0.5);
+      mmType1Coords[axisIndex] = static_cast<FT_Long>(value + 0.5);
     } else {
       coords[axisIndex] = FTDoubleToFixed(value);
     }
   }
-  FT_Set_Var_Design_Coordinates(face, axes_->size(), coords);
+  if (isMMType1) {
+    FT_Set_MM_Design_Coordinates(face, axes_->size(), mmType1Coords);
+  } else {
+    FT_Set_Var_Design_Coordinates(face, axes_->size(), coords);
+  }
 
   return face;
 }
