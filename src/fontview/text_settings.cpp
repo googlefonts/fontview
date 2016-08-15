@@ -31,9 +31,36 @@
 #include "fontview/text_settings.h"
 #include "fontview/util.h"
 
+#include <wx/filename.h>
+
 namespace fontview {
 
 FT_Library GetFreeTypeLibrary();
+
+static bool AttachExternalMetrics(FT_Face face, const std::string& path) {
+  wxFileName filename(path);
+  std::string metricsFile;
+
+  filename.SetExt("mmm");
+  metricsFile = filename.GetFullPath().ToStdString();
+  if (FT_Attach_File(face, metricsFile.c_str()) == 0) {
+    return true;
+  }
+
+  filename.SetExt("pfm");
+  metricsFile = filename.GetFullPath().ToStdString();
+  if (FT_Attach_File(face, metricsFile.c_str()) == 0) {
+    return true;
+  }
+
+  filename.SetExt("afm");
+  metricsFile = filename.GetFullPath().ToStdString();
+  if (FT_Attach_File(face, metricsFile.c_str()) == 0) {
+    return true;
+  }
+
+  return false;
+}
 
 static std::vector<FT_Face>* LoadFaces(const std::string& path) {
   FT_Library freeTypeLib = GetFreeTypeLibrary();
@@ -41,9 +68,11 @@ static std::vector<FT_Face>* LoadFaces(const std::string& path) {
   FT_Long numFaces = 0;
   FT_Face face = NULL;
   FT_Error error = FT_New_Face(freeTypeLib, path.c_str(), -1, &face);
+  bool hasExternalMetrics = false;
   if (face) {
     if (!error) {
       numFaces = face->num_faces;
+      hasExternalMetrics = AttachExternalMetrics(face, path);
     }
     FT_Done_Face(face);
   }
@@ -51,6 +80,9 @@ static std::vector<FT_Face>* LoadFaces(const std::string& path) {
     face = NULL;
     if (FT_New_Face(freeTypeLib, path.c_str(), faceIndex, &face)) {
       continue;
+    }
+    if (hasExternalMetrics) {
+      AttachExternalMetrics(face, path);
     }
     faces->push_back(face);
   }
