@@ -169,23 +169,23 @@ void TextSettings::SetFontSize(double size) {
 }
 
 bool TextSettings::SetStyleWithoutNotification(FontStyle* style) {
-  if (style == style_) {
-    return false;
-  }
-
   // Reject FontStyles that are not owned by us.
   if (style != NULL &&
       std::find(styles_.begin(), styles_.end(), style) == styles_.end()) {
-    return false;
+    style = NULL;
   }
 
+  bool changed = style_ != style;
   style_ = style;
-  variation_.clear();
   if (style) {
+    changed = changed || (variation_ != style->GetVariation());
     variation_ = style->GetVariation();
+  } else {
+    changed = changed || !variation_.empty();
+    variation_.clear();
   }
 
-  return true;
+  return changed;
 }
 
 void TextSettings::Clear() {
