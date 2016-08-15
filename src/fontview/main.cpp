@@ -280,8 +280,8 @@ void MyFrame::OnTextSettingsChanged() {
       if (va < vb) return true; else if (va > vb) return false;
       va = a->GetWidth(); vb = b->GetWidth();
       if (va < vb) return true; else if (va > vb) return false;
-      va = a->GetSlant(); vb = b->GetSlant();
-      if (va < vb) return true; else if (va > vb) return false;
+      va = a->GetSlant(); vb = b->GetSlant();  // negative = right-leaning
+      if (va > vb) return true; else if (va < vb) return false;
       return a->GetStyleName() < b->GetStyleName();
   });
 
