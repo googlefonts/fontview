@@ -171,18 +171,20 @@ static double GetWidth(FT_Face face, const FontStyle::Variation& variation) {
   return 100;
 }
 
+// Returns the slant angle of a face, from -90 to +90.
+// Negative values lean to the right (forward direction in Latin),
+// positive values lean to the left (backward direction in Latin),
+// zero means “upright” according to the font designer’s view.
 static double GetSlant(FT_Face face, const FontStyle::Variation& variation) {
-  // TODO: It is undefined if negative values are leaning to the left or right.
-  // Clarify with the OpenType working group, so the spec becomes clearer.
   FontStyle::Variation::const_iterator iter = variation.find(slantTag);
   if (iter != variation.end()) {
-    return iter->second;  // TODO: Unclear if we should negate this value.
+    return clamp(iter->second, -90, +90);
   }
 
   TT_Postscript* post =
     static_cast<TT_Postscript*>(FT_Get_Sfnt_Table(face, ft_sfnt_post));
   if (post) {
-    return -FTFixedToDouble(post->italicAngle);
+    return clamp(FTFixedToDouble(post->italicAngle), -90, +90);
   }
 
   return 0;
