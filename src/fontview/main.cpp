@@ -259,6 +259,7 @@ void MyFrame::OnAbout(wxCommandEvent& event) {
 void MyFrame::OnTextSettingsChanged() {
   processingModelChange_ = true;
   sampleText_->SetFontFace(textSettings_->GetFace());
+  sampleText_->SetFontSize(textSettings_->GetFontSize());
   wxFileName filename(textSettings_->GetFontContainer());
   SetTitle(filename.GetFullName());
 

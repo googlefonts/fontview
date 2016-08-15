@@ -23,12 +23,13 @@
 #include <wx/wx.h>
 
 #include "fontview/sample_text.h"
+#include "fontview/util.h"
 
 namespace fontview {
 
 SampleText::SampleText(wxWindow* parent)
   : wxScrolledCanvas(parent, wxID_ANY),
-    fontFace_(NULL),
+    fontFace_(NULL), fontSize_(12.0),
     raqm_(raqm_create()) {
 }
 
@@ -40,17 +41,14 @@ void SampleText::SetText(const std::string& text) {
   text_ = text;
   raqm_set_text_utf8(raqm_, text_.c_str(), text_.size());
   raqm_set_par_direction(raqm_, RAQM_DIRECTION_DEFAULT);
-  LayoutContent();
 }
 
 void SampleText::SetFontFace(FT_Face fontFace) {
   fontFace_ = fontFace;
-  raqm_set_freetype_face(raqm_, fontFace_);
-  LayoutContent();
 }
 
-void SampleText::LayoutContent() {
-  raqm_layout(raqm_);
+void SampleText::SetFontSize(double size) {
+  fontSize_ = clamp(size, 1, 1000);
 }
 
 wxSize SampleText::DoGetBestSize() const {
@@ -72,13 +70,22 @@ void SampleText::Paint(wxDC& dc) {
   if (!fontFace_ || !raqm_ || !dc.IsOk()) {
     return;
   }
-  dc.Clear();
-  //wxSize dpi = dc.GetPPI();
-  //printf("SampleText::Render(), %d %d\n", dpi.x, dpi.y);
 
+  dc.Clear();
+  const wxSize resolution = dc.GetPPI();  // pixels per inch
+  FT_Set_Char_Size(fontFace_, static_cast<FT_F26Dot6>(fontSize_ * 64 + 0.5),
+                   0, resolution.x, resolution.y);
+  raqm_set_freetype_face(raqm_, fontFace_);
+  if (!raqm_layout(raqm_)) {
+    return;
+  }
+
+  const double ascender = fontSize_ *
+    (static_cast<double>(fontFace_->ascender) /
+     static_cast<double>(fontFace_->units_per_EM));
   size_t numGlyphs = 0;
   raqm_glyph_t* glyphs = raqm_get_glyphs(raqm_, &numGlyphs);
-  double x = 2, y = 2;
+  double x = 2, y = 2 + ceil(ascender);
   for (size_t i = 0; i < numGlyphs; ++i) {
     double glyphX = x + glyphs[i].x_offset / 64.0;
     double glyphY = y + glyphs[i].y_offset / 64.0;

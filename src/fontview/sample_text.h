@@ -34,6 +34,7 @@ class SampleText : public wxScrolledCanvas {
   virtual ~SampleText();
   void SetText(const std::string& text);
   void SetFontFace(FT_Face fontFace);
+  void SetFontSize(double size);
   void Paint();
   wxDECLARE_EVENT_TABLE();
 
@@ -41,12 +42,12 @@ class SampleText : public wxScrolledCanvas {
   virtual wxSize DoGetBestSize() const;
 
  private:
-  void LayoutContent();
   void OnPaint(wxPaintEvent& event);
   void Paint(wxDC& dc);
 
   std::string text_;
   FT_Face fontFace_;
+  double fontSize_;
   raqm_t* raqm_;
 };
 
