@@ -329,6 +329,9 @@ void MyFrame::OnTextSettingsChanged() {
   }
 
   sizeControl_->SetValue(textSettings_->GetFontSize());
+  if (sampleText_) {
+    sampleText_->Paint();
+  }
   processingModelChange_ = false;
 }
 

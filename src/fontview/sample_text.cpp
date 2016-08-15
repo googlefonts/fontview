@@ -50,18 +50,7 @@ void SampleText::SetFontFace(FT_Face fontFace) {
 }
 
 void SampleText::LayoutContent() {
-  if (!raqm_layout(raqm_)) {
-    return;
-  }
-  size_t numGlyphs = 0;
-  raqm_glyph_t* glyphs = raqm_get_glyphs(raqm_, &numGlyphs);
-  printf("SampleText::LayoutContent(); numGlyphs: %lu\n", numGlyphs);
-  if (numGlyphs > 0) {
-    size_t i = numGlyphs - 1;
-    printf("  glyphs[%lu]: advance=(%d,%d)\n",
-           i, glyphs[i].x_advance, glyphs[i].y_advance);
-  }
-  // TODO: Destroy glyphs?
+  raqm_layout(raqm_);
 }
 
 wxSize SampleText::DoGetBestSize() const {
@@ -69,12 +58,39 @@ wxSize SampleText::DoGetBestSize() const {
   return wxSize(600, 300);
 }
 
+void SampleText::Paint() {
+  wxWindowDC dc(this);
+  Paint(dc);
+}
+
 void SampleText::OnPaint(wxPaintEvent& event) {
-  printf("OnPaint\n");
-  if (!fontFace_ || !raqm_) {
+  wxPaintDC dc(this);
+  Paint(dc);
+}
+
+void SampleText::Paint(wxDC& dc) {
+  if (!fontFace_ || !raqm_ || !dc.IsOk()) {
     return;
   }
-  printf("SampleText::OnPaint()\n");
+  dc.Clear();
+  //wxSize dpi = dc.GetPPI();
+  //printf("SampleText::Render(), %d %d\n", dpi.x, dpi.y);
+
+  size_t numGlyphs = 0;
+  raqm_glyph_t* glyphs = raqm_get_glyphs(raqm_, &numGlyphs);
+  double x = 2, y = 2;
+  for (size_t i = 0; i < numGlyphs; ++i) {
+    double glyphX = x + glyphs[i].x_offset / 64.0;
+    double glyphY = y + glyphs[i].y_offset / 64.0;
+    dc.DrawPoint(glyphX, glyphY);
+    //printf("%lu %.1f %.1f\n", i, glyphX, glyphY);
+    x += glyphs[i].x_advance / 64.0;
+    y += glyphs[i].y_advance / 64.0;
+  }
 }
+
+wxBEGIN_EVENT_TABLE(SampleText, wxScrolledCanvas)
+EVT_PAINT(SampleText::OnPaint)
+wxEND_EVENT_TABLE()
 
 }  // namespace fontview

@@ -34,13 +34,16 @@ class SampleText : public wxScrolledCanvas {
   virtual ~SampleText();
   void SetText(const std::string& text);
   void SetFontFace(FT_Face fontFace);
+  void Paint();
+  wxDECLARE_EVENT_TABLE();
 
  protected:
   virtual wxSize DoGetBestSize() const;
-  virtual void OnPaint(wxPaintEvent& event);
 
  private:
   void LayoutContent();
+  void OnPaint(wxPaintEvent& event);
+  void Paint(wxDC& dc);
 
   std::string text_;
   FT_Face fontFace_;
