@@ -32,8 +32,10 @@ def main():
 def build_mac(release):
     if not release:
         release = ''
-    if os.system('./src/third_party/gyp/gyp -f make --depth . ' +
-                 '--generator-output build  src/fontview/fontview.gyp') != 0:
+    if os.system('FONTVIEW_VERSION=\"%s\" '
+                 './src/third_party/gyp/gyp -f make --depth . '
+                 '--generator-output build  src/fontview/fontview.gyp' %
+                 (release, )) != 0:
         return False
     if os.system('make --directory build') != 0:
         return False

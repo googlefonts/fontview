@@ -14,6 +14,9 @@
       'include_dirs': [
         '..',
       ],
+      'defines': [
+        'FONTVIEW_VERSION=' + '<!(echo $FONTVIEW_VERSION)',
+      ],
       'dependencies': [
         '../third_party/freetype/freetype.gyp:freetype',
         '../third_party/fribidi/fribidi.gyp:fribidi',

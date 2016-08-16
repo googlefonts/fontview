@@ -259,6 +259,16 @@ void MyFrame::OnExit(wxCommandEvent& event) {
 
 void MyFrame::OnAbout(wxCommandEvent& event) {
   wxAboutDialogInfo info;
+
+#ifdef FONTVIEW_VERSION
+#define VERSION_str(s) #s
+#define VERSION_xstr(s) VERSION_str(s)
+  const char* version = VERSION_xstr(FONTVIEW_VERSION);
+  if (version && *version) {
+    info.SetVersion(wxString(version));
+  }
+#endif
+
   info.SetCopyright(
       wxT("Copyright © 2016 Google, Inc. All rights reserved.\n"
           "Licensed under the Apache License, Version 2.0."));
