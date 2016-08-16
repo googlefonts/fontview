@@ -18,10 +18,10 @@
     <true/>
 
     <key>CFBundleVersion</key>
-    <string>0.1</string>
+    <string>%(LONG_VERSION)s</string>
 
     <key>CFBundleShortVersionString</key>
-    <string>0.1</string>
+    <string>%(SHORT_VERSION)s</string>
  
     <key>CFBundleName</key>
     <string>FontView</string>

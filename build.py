@@ -14,20 +14,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import shutil, os, sys
+import argparse, codecs, shutil, os, sys
 
 def main():
+    parser = argparse.ArgumentParser(
+        description='build the FontView application')
+    parser.add_argument('--release', help='current release, eg. "v1.2"')
+    args = parser.parse_args()
+    success = False
     if os.uname()[0] == 'Darwin':
-        build_mac()
+        success = build_mac(args.release)
     else:
         sys.stderr.write('Unsupported platform' + os.linesep)
-        sys.exit(1)
+    sys.exit(0 if success else 1)
 
 
-def build_mac():
-    os.system('./src/third_party/gyp/gyp -f make --depth . ' +
-              '--generator-output build  src/fontview/fontview.gyp')
-    os.system('make --directory build')
+def build_mac(release):
+    if not release:
+        release = ''
+    if os.system('./src/third_party/gyp/gyp -f make --depth . ' +
+                 '--generator-output build  src/fontview/fontview.gyp') != 0:
+        return False
+    if os.system('make --directory build') != 0:
+        return False
     shutil.rmtree('build/FontView.app', ignore_errors=True)
     os.mkdir('build/FontView.app')
     os.mkdir('build/FontView.app/Contents')
@@ -35,10 +44,27 @@ def build_mac():
     os.mkdir('build/FontView.app/Contents/Resources')
     shutil.copy('build/out/Default/fontview',
                 'build/FontView.app/Contents/MacOS/fontview')
-    shutil.copy('src/fontview/mac/Info.plist',
-                'build/FontView.app/Contents/Info.plist')
-    os.system('/usr/bin/SetFile -t APPL '
-              'build/FontView.app/Contents/MacOS/fontview')
+    with codecs.open('src/fontview/mac/Info.plist', 'r', 'utf-8') as info_file:
+        info = info_file.read()
+    info = info % {
+        'SHORT_VERSION': release.replace('v', ''),
+        'LONG_VERSION': release.replace('v', 'Version ')
+    }
+    with codecs.open('build/FontView.app/Contents/Info.plist', 'w',
+                     'utf-8') as out_info_file:
+        out_info_file.write(info)
+    if os.system('/usr/bin/SetFile -t APPL '
+                 'build/FontView.app/Contents/MacOS/fontview') != 0:
+        return False
+    if release:
+        cwd = os.getcwd()
+        os.chdir('build')
+        if os.system('zip -r FontView-MacOS.zip FontView.app') != 0:
+            return False
+        os.chdir(cwd)
+    else:
+        shutil.rmtree('build/FontView-MacOS.zip', ignore_errors=True)
+    return True
 
 
 if __name__ == '__main__':
