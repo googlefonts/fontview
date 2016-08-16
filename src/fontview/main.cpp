@@ -49,6 +49,7 @@ class MyApp : public wxApp {
   MyApp();
   virtual bool OnInit();
 
+  virtual void MacNewFile() ;
   virtual void MacOpenFile(const wxString& fileName);
   bool OpenFontFile(wxWindow* parent);
 
@@ -129,6 +130,10 @@ bool MyApp::OpenFontFile(wxWindow* parent) {
   }
 }
 
+void MyApp::MacNewFile() {
+  OpenFontFile(NULL);
+}
+
 void MyApp::MacOpenFile(const wxString& path) {
   std::unique_ptr<TextSettings> textSettings(new TextSettings());
   if (!textSettings->SetFontContainer(path.ToStdString())) {
@@ -153,7 +158,11 @@ bool MyApp::OnInit() {
     wxExit();
   }
 
+#if defined(__WXOSX__) && __WXOSX__
+  return true;
+#else
   return OpenFontFile(NULL);
+#endif
 }
 
 MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
