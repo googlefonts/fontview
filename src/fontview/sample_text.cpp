@@ -21,6 +21,7 @@
 #include FT_FREETYPE_H
 
 #include <raqm.h>
+#include <wx/rawbmp.h>
 #include <wx/wx.h>
 
 #include "fontview/sample_text.h"
@@ -99,14 +100,91 @@ static bool GetGlyphImage(FT_Face face, FT_UInt glyph, wxImage* image) {
   return true;
 }
 
+static void FillBlack(wxBitmap* bitmap) {
+  wxNativePixelData data(*bitmap);
+  if (!data) {
+    return;
+  }
+
+  wxNativePixelData::Iterator pixel(data);
+  const int maxX = data.GetWidth(), maxY = data.GetHeight();
+  for (int y = 0; y < maxY; ++y) {
+    pixel.MoveTo(data, 0, y);
+    for (int x = 0; x < maxX; ++x) {
+      pixel.Red() = pixel.Green() = pixel.Blue() = 0;
+      ++pixel;
+    }
+  }
+}
+
+static void CopyAlpha(const FT_Bitmap& source, wxBitmap* target) {
+  wxAlphaPixelData data(*target);
+  if (!data) {
+    return;
+  }
+
+  wxAlphaPixelData::Iterator pixel(data);
+  const int maxX = data.GetWidth(), maxY = data.GetHeight();
+  for (int y = 0; y < maxY; ++y) {
+    pixel.MoveTo(data, 0, y);
+    if (y < source.rows) {
+      const uint8_t* ftAlpha = source.buffer + y * source.pitch;
+      for (int x = 0; x < maxX; ++x) {
+	pixel.Alpha() = x < source.width ? ftAlpha[x] : 0;
+	++pixel;
+      }
+    } else {
+      pixel.Alpha() = 0;
+      ++pixel;
+    }
+  }
+}
+
+void SampleText::DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph,
+			   double xPos, double yPos) {
+  const double scale = dc.GetContentScaleFactor();
+  const FT_F26Dot6 size =
+    static_cast<FT_F26Dot6>(fontSize_ * 64 * scale + 0.5);
+  if (FT_Set_Char_Size(face, size, size, 72, 72) ||
+      FT_Load_Glyph(face, glyph, FT_LOAD_RENDER) ||
+      !face->glyph) {
+    return;
+  }
+
+  const size_t width = face->glyph->bitmap.width;
+  const size_t height = face->glyph->bitmap.rows;
+  if (width == 0 || height == 0) {
+    return;
+  }
+
+  wxBitmap bitmap;
+  if (!bitmap.CreateScaled(ceil(width / scale), ceil(height / scale),
+			   32, scale)) {
+    return;
+  }
+
+  FillBlack(&bitmap);
+  FT_Bitmap ftBitmap;
+  FT_Bitmap_Init(&ftBitmap);
+  FT_Bitmap_Convert(face->glyph->library, &face->glyph->bitmap, &ftBitmap, 1);
+  CopyAlpha(ftBitmap, &bitmap);
+  FT_Bitmap_Done(face->glyph->library, &ftBitmap);
+
+  dc.DrawBitmap(bitmap,
+		xPos + (fontFace_->glyph->bitmap_left / scale),
+		yPos - (fontFace_->glyph->bitmap_top / scale));
+}
+
 void SampleText::Paint(wxDC& dc) {
   if (!fontFace_ || !raqm_ || !dc.IsOk()) {
     return;
   }
 
   dc.Clear();
+  const double scale = dc.GetContentScaleFactor();
   const wxSize dpi = dc.GetPPI();  // dots/pixels per inch
-  const FT_F26Dot6 size = static_cast<FT_F26Dot6>(fontSize_ * 64 + 0.5);
+  const FT_F26Dot6 size =
+      static_cast<FT_F26Dot6>(fontSize_ * 64 * scale + 0.5);
   if (FT_Set_Char_Size(fontFace_, size, size, dpi.x, dpi.y)) {
     return;
   }
@@ -120,20 +198,14 @@ void SampleText::Paint(wxDC& dc) {
        static_cast<double>(fontFace_->units_per_EM));
   size_t numGlyphs = 0;
   raqm_glyph_t* glyphs = raqm_get_glyphs(raqm_, &numGlyphs);
-  double x = 2, y = 2 + ascender;
-  wxImage image;
+  const double border =  2 * scale;
+  double x = border, y = border + ascender;
   for (size_t i = 0; i < numGlyphs; ++i) {
-    if (GetGlyphImage(glyphs[i].ftface, glyphs[i].index, &image)) {
-      wxBitmap bitmap(image, dc.GetDepth());
-      wxCoord glyphX = x + glyphs[i].x_offset / 64.0 + 0.5;
-      wxCoord glyphY = y + glyphs[i].y_offset / 64.0 + 0.5;
-      dc.DrawBitmap(bitmap,
-                    glyphX + fontFace_->glyph->bitmap_left,
-                    glyphY - fontFace_->glyph->bitmap_top,
-                    false);  // useMask
-    }
-    x += glyphs[i].x_advance / 64.0;
-    y += glyphs[i].y_advance / 64.0;
+    double glyphX = x + glyphs[i].x_offset / (scale * 64.0);
+    double glyphY = y + glyphs[i].y_offset / (scale * 64.0);
+    DrawGlyph(dc, glyphs[i].ftface, glyphs[i].index, glyphX, glyphY);
+    x += glyphs[i].x_advance / (scale * 64.0);
+    y += glyphs[i].y_advance / (scale * 64.0);
   }
 }
 

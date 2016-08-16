@@ -44,6 +44,7 @@ class SampleText : public wxScrolledCanvas {
  private:
   void OnPaint(wxPaintEvent& event);
   void Paint(wxDC& dc);
+  void DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph, double x, double y);
 
   std::string text_;
   FT_Face fontFace_;
