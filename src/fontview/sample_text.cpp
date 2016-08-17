@@ -64,38 +64,6 @@ void SampleText::OnPaint(wxPaintEvent& event) {
   Paint(dc);
 }
 
-static bool GetGlyphImage(FT_Face face, FT_UInt glyph, wxImage* image) {
-  if (!face || !image ||
-      FT_Load_Glyph(face, glyph, FT_LOAD_RENDER|FT_LOAD_COLOR)) {
-    return false;
-  }
-
-  if (!face->glyph || face->glyph->format != FT_GLYPH_FORMAT_BITMAP) {
-    return false;
-  }
-
-  const size_t width = face->glyph->bitmap.width;
-  const size_t height = face->glyph->bitmap.rows;
-  if (width == 0 || height == 0) {
-    return false;
-  }
-
-  FT_Bitmap bitmap;
-  FT_Bitmap_Init(&bitmap);
-  FT_Bitmap_Convert(face->glyph->library, &face->glyph->bitmap, &bitmap, 1);
-  const size_t numBytes = width * height * 4;
-  unsigned char* data = static_cast<unsigned char*>(malloc(numBytes));
-  unsigned char* alpha = data + width * height * 3;
-  bzero(data, width * height * 3);
-  memcpy(alpha, bitmap.buffer, width * height);
-  FT_Bitmap_Done(face->glyph->library, &bitmap);
-
-  image->SetData(data, width, height, false);
-  image->SetAlpha(alpha, true);
-
-  return true;
-}
-
 static void FillBlack(wxBitmap* bitmap) {
   wxNativePixelData data(*bitmap);
   if (!data) {
