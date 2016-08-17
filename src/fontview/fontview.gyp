@@ -4,6 +4,7 @@
       'target_name': 'fontview',
       'type': 'executable',
       'sources': [
+        'caret.cpp',
         'font_style.cpp',
         'font_var_axis.cpp',
         'main.cpp',
@@ -23,6 +24,18 @@
         '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
         '../third_party/raqm/raqm.gyp:raqm',
         '../third_party/wxWidgets/wxWidgets.gyp:core',
+      ],
+      'conditions': [
+        ['OS == "mac"', {
+          'sources': [
+            'mac/caret.mm',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+            ],
+          },
+        }],
       ],
     },
   ],
