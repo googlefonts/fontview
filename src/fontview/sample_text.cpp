@@ -81,7 +81,9 @@ static void FillBlack(wxBitmap* bitmap) {
   }
 }
 
-static void CopyAlpha(const FT_Bitmap& source, wxBitmap* target) {
+static void CopyAlpha(const FT_Bitmap& source,
+                      int leftOffset, int topOffset,
+                      wxBitmap* target) {
   wxAlphaPixelData data(*target);
   if (!data) {
     return;
@@ -90,11 +92,17 @@ static void CopyAlpha(const FT_Bitmap& source, wxBitmap* target) {
   wxAlphaPixelData::Iterator pixel(data);
   const int maxX = data.GetWidth(), maxY = data.GetHeight();
   for (int y = 0; y < maxY; ++y) {
+    const int sourceY = y - topOffset;
     pixel.MoveTo(data, 0, y);
-    if (y < source.rows) {
-      const uint8_t* ftAlpha = source.buffer + y * source.pitch;
+    if (sourceY >= 0 && sourceY < source.rows) {
+      const uint8_t* ftAlpha = source.buffer + sourceY * source.pitch;
       for (int x = 0; x < maxX; ++x) {
-	pixel.Alpha() = x < source.width ? ftAlpha[x] : 0;
+	const int sourceX = x - leftOffset;
+	if (sourceX >= 0 && sourceX < source.width) {
+	  pixel.Alpha() = ftAlpha[sourceX];
+	} else {
+	  pixel.Alpha() = 0;
+	}
 	++pixel;
       }
     } else {
@@ -102,6 +110,27 @@ static void CopyAlpha(const FT_Bitmap& source, wxBitmap* target) {
       ++pixel;
     }
   }
+}
+
+// The wxWidgets device context uses integer coordinates in its
+// drawing API.  On high-resolution (Retina) displays, the coordinates
+// are the same and even though wxWidgets has a GetPPI() call, it
+// always reports 72 dpi.  Instead, the device context for a Retina
+// screen has a "Content Scaling" factor of 2.0 instead of the normal
+// 1.0. This means that we cannot address the individual pixels of a
+// high-resolution screen. When rendering text, this results in a
+// wobbly baseline, which is quite noticeable at small font sizes. In
+// theory, wxWidgets would allow scaling the user coordinate system to
+// address pixels at higher resolution. However, when using this call,
+// the coordinate system sometimes mirrors around the X axis, at least
+// on MacOS. This mirroring seems to happen non-deterministically, so
+// it smells very much like a bug in the wxWidgets library.
+//
+// To work around this bug, we compensate for rounding errors by
+// inserting empty space into the high-res bitmap.
+static inline int CompensateRounding(double pos, double scale) {
+  const int32_t intPos = static_cast<int32_t>(pos);
+  return static_cast<int32_t>((pos - intPos) * scale);
 }
 
 void SampleText::DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph,
@@ -121,22 +150,24 @@ void SampleText::DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph,
     return;
   }
 
-  wxBitmap bitmap;
-  if (!bitmap.CreateScaled(ceil(width / scale), ceil(height / scale),
-			   32, scale)) {
-    return;
-  }
-
-  FillBlack(&bitmap);
   FT_Bitmap ftBitmap;
   FT_Bitmap_Init(&ftBitmap);
   FT_Bitmap_Convert(face->glyph->library, &face->glyph->bitmap, &ftBitmap, 1);
-  CopyAlpha(ftBitmap, &bitmap);
-  FT_Bitmap_Done(face->glyph->library, &ftBitmap);
+  xPos += fontFace_->glyph->bitmap_left / scale;
+  yPos -= fontFace_->glyph->bitmap_top / scale;
+  const int leftOffset = CompensateRounding(xPos, scale);
+  const int topOffset = CompensateRounding(yPos, scale);
 
-  dc.DrawBitmap(bitmap,
-		xPos + (fontFace_->glyph->bitmap_left / scale),
-		yPos - (fontFace_->glyph->bitmap_top / scale));
+  wxBitmap bitmap;
+  if (bitmap.CreateScaled(ceil(width / scale) + leftOffset,
+			  ceil(height / scale) + topOffset,
+			  32, scale)) {
+    FillBlack(&bitmap);
+    CopyAlpha(ftBitmap, leftOffset, topOffset, &bitmap);
+    dc.DrawBitmap(bitmap, xPos, yPos);
+  }
+
+  FT_Bitmap_Done(face->glyph->library, &ftBitmap);
 }
 
 void SampleText::Paint(wxDC& dc) {
