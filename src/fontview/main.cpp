@@ -75,6 +75,9 @@ class MyFrame : public wxFrame {
   void OnFontSizeFieldChanged(wxSpinDoubleEvent& event);
   void OnAxisSliderChanged(wxCommandEvent& event);
   void OnTextSettingsChanged();
+
+  void RebuildFamilyChoice();
+  void RebuildStyleChoice();
   bool ShouldRebuildAxisSliders() const;
   void RebuildAxisSliders();
 
@@ -283,12 +286,39 @@ void MyFrame::OnTextSettingsChanged() {
   wxFileName filename(textSettings_->GetFontContainer());
   SetTitle(filename.GetFullName());
 
+  RebuildFamilyChoice();
+  RebuildStyleChoice();
+  if (ShouldRebuildAxisSliders()) {
+    RebuildAxisSliders();
+  }
+
+  const FontStyle::Variation& var = textSettings_->GetVariation();
+  for (const AxisSlider& s : axisSliders_) {
+    FontStyle::Variation::const_iterator iter = var.find(s.axis->GetTag());
+    if (iter != var.end() && s.axis->GetMinValue() < s.axis->GetMaxValue()) {
+      double fraction = (iter->second - s.axis->GetMinValue()) /
+	(s.axis->GetMaxValue() - s.axis->GetMinValue());
+      fraction = fontview::clamp(fraction, 0.0, 1.0);
+      s.slider->SetValue(static_cast<int>(fraction * 1000000));
+    }
+  }
+
+  sizeControl_->SetValue(textSettings_->GetFontSize());
+  if (sampleText_) {
+    sampleText_->Paint();
+  }
+  processingModelChange_ = false;
+}
+
+void MyFrame::RebuildFamilyChoice() {
   familyChoice_->Clear();
   for (const std::string& family : textSettings_->GetFamilies()) {
     familyChoice_->Append(wxString(family));
   }
   familyChoice_->SetStringSelection(textSettings_->GetFamily());
+}
 
+void MyFrame::RebuildStyleChoice() {
   std::vector<FontStyle*> styles;
   for (FontStyle* style : textSettings_->GetStyles()) {
     if (style->GetFamilyName() == textSettings_->GetFamily()) {
@@ -333,27 +363,6 @@ void MyFrame::OnTextSettingsChanged() {
     styleChoice_->Append(std::string("Custom"), static_cast<void*>(NULL));
     styleChoice_->SetSelection(styleChoice_->GetCount() - 1);
   }
-
-  if (ShouldRebuildAxisSliders()) {
-    RebuildAxisSliders();
-  }
-
-  const FontStyle::Variation& var = textSettings_->GetVariation();
-  for (const AxisSlider& s : axisSliders_) {
-    FontStyle::Variation::const_iterator iter = var.find(s.axis->GetTag());
-    if (iter != var.end() && s.axis->GetMinValue() < s.axis->GetMaxValue()) {
-      double fraction = (iter->second - s.axis->GetMinValue()) /
-	(s.axis->GetMaxValue() - s.axis->GetMinValue());
-      fraction = fontview::clamp(fraction, 0.0, 1.0);
-      s.slider->SetValue(static_cast<int>(fraction * 1000000));
-    }
-  }
-
-  sizeControl_->SetValue(textSettings_->GetFontSize());
-  if (sampleText_) {
-    sampleText_->Paint();
-  }
-  processingModelChange_ = false;
 }
 
 // Find out if we need to rebuild the axis sliders. We avoid rebuilding
