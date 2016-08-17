@@ -35,6 +35,8 @@
 
 namespace fontview {
 
+const double TextSettings::defaultFontSize = 36.0;
+
 FT_Library GetFreeTypeLibrary();
 
 static bool AttachExternalMetrics(FT_Face face, const std::string& path) {
@@ -221,7 +223,7 @@ bool TextSettings::SetStyleWithoutNotification(FontStyle* style) {
 }
 
 void TextSettings::Clear() {
-  fontSize_ = 11.0;
+  fontSize_ = defaultFontSize;
   variation_.clear();
   style_ = NULL;
   family_.clear();

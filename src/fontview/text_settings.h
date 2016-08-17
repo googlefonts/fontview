@@ -73,6 +73,8 @@ class TextSettings {
   void SetFontSize(double size);
 
  private:
+  static const double defaultFontSize;
+
   void Clear();
   bool SetStyleWithoutNotification(FontStyle* style);
   void NotifyListeners();
