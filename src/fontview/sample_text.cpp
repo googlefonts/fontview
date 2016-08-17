@@ -31,18 +31,14 @@ namespace fontview {
 
 SampleText::SampleText(wxWindow* parent)
   : wxScrolledCanvas(parent, wxID_ANY),
-    fontFace_(NULL), fontSize_(12.0),
-    raqm_(raqm_create()) {
+    fontFace_(NULL), fontSize_(12.0) {
 }
 
 SampleText::~SampleText() {
-  raqm_destroy(raqm_);
 }
 
 void SampleText::SetText(const std::string& text) {
   text_ = text;
-  raqm_set_text_utf8(raqm_, text_.c_str(), text_.size());
-  raqm_set_par_direction(raqm_, RAQM_DIRECTION_DEFAULT);
 }
 
 void SampleText::SetFontFace(FT_Face fontFace) {
@@ -176,7 +172,7 @@ void SampleText::DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph,
 }
 
 void SampleText::Paint(wxDC& dc) {
-  if (!fontFace_ || !raqm_ || !dc.IsOk()) {
+  if (!fontFace_ || !dc.IsOk()) {
     return;
   }
 
@@ -189,7 +185,11 @@ void SampleText::Paint(wxDC& dc) {
     return;
   }
 
-  if (!raqm_set_freetype_face(raqm_, fontFace_) || !raqm_layout(raqm_)) {
+  raqm_t* layout = raqm_create();
+  raqm_set_text_utf8(layout, text_.c_str(), text_.size());
+  raqm_set_par_direction(layout, RAQM_DIRECTION_DEFAULT);
+  if (!raqm_set_freetype_face(layout, fontFace_) || !raqm_layout(layout)) {
+    raqm_destroy(layout);
     return;
   }
 
@@ -197,7 +197,7 @@ void SampleText::Paint(wxDC& dc) {
       (static_cast<double>(fontFace_->ascender) /
        static_cast<double>(fontFace_->units_per_EM));
   size_t numGlyphs = 0;
-  raqm_glyph_t* glyphs = raqm_get_glyphs(raqm_, &numGlyphs);
+  raqm_glyph_t* glyphs = raqm_get_glyphs(layout, &numGlyphs);
   const double border =  2 * scale;
   double x = border, y = border + ascender;
   for (size_t i = 0; i < numGlyphs; ++i) {
@@ -207,6 +207,8 @@ void SampleText::Paint(wxDC& dc) {
     x += glyphs[i].x_advance / (scale * 64.0);
     y += glyphs[i].y_advance / (scale * 64.0);
   }
+
+  raqm_destroy(layout);
 }
 
 wxBEGIN_EVENT_TABLE(SampleText, wxScrolledCanvas)

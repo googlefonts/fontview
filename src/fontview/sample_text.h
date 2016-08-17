@@ -49,7 +49,6 @@ class SampleText : public wxScrolledCanvas {
   std::string text_;
   FT_Face fontFace_;
   double fontSize_;
-  raqm_t* raqm_;
 };
 
 }  // namespace fontview
