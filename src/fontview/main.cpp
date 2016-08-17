@@ -179,9 +179,10 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   fileMenu->Append(wxID_NEW);
   fileMenu->Enable(wxID_NEW, false);
   fileMenu->Append(wxID_OPEN);
-  fileMenu->Append(wxID_CLOSE);
+  fileMenu->Append(wxID_CLOSE, wxT("Close\tCtrl+W"));
   fileMenu->AppendSeparator();
   fileMenu->Append(wxID_EXIT);
+
   wxMenu* helpMenu = new wxMenu();
   helpMenu->Append(wxID_ABOUT, wxT("About FontView"));
   wxMenuBar* menuBar = new wxMenuBar();
