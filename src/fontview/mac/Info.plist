@@ -26,6 +26,11 @@
     <key>CFBundleName</key>
     <string>FontView</string>
 
+    <key>CFBundleLocalizations</key>
+    <array>
+      <string>en</string>
+    </array>
+
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
 
