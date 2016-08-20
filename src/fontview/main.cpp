@@ -126,8 +126,8 @@ bool MyApp::OpenFontFile(wxWindow* parent) {
   const wxString path = wxFileSelector(
       wxT("Load font file"),
       wxEmptyString, wxEmptyString, wxEmptyString,
-      wxT("Font files (*.ttf, *.otf, *.otc, *.ttc, *.pfb)"
-          "|*.ttf;*.otf;*.otc;*.ttc;*.pfb"),
+      wxT("Font files (*.ttf, *.otf, *.otc, *.ttc, *.pfb, *.pfa)"
+          "|*.ttf;*.otf;*.otc;*.ttc;*.pfb;*.pfa"),
       wxFD_OPEN | wxFD_FILE_MUST_EXIST,
       parent);
   if (path.empty()) {
