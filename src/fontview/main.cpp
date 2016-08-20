@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <set>
