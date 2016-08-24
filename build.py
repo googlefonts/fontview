@@ -22,16 +22,19 @@ def main():
     parser.add_argument('--release', help='current release, eg. "v1.2"')
     args = parser.parse_args()
     success = False
-    if os.uname()[0] == 'Darwin':
-        success = build_mac(args.release)
+
+    platform = os.uname()[0]
+    release = args.release if args.release else ''
+    if platform == 'Linux':
+        success = build_unix(release)
+    elif platform == 'Darwin':
+        success = build_unix(release) and package_mac(release)
     else:
-        sys.stderr.write('Unsupported platform' + os.linesep)
+        sys.stderr.write('Unsupported platform \"%s\"' % platform + os.linesep)
     sys.exit(0 if success else 1)
 
 
-def build_mac(release):
-    if not release:
-        release = ''
+def build_unix(release):
     if os.system('FONTVIEW_VERSION=\"%s\" '
                  './src/third_party/gyp/gyp -f make --depth . '
                  '--generator-output build  src/fontview/fontview.gyp' %
@@ -39,6 +42,9 @@ def build_mac(release):
         return False
     if os.system('make --directory build') != 0:
         return False
+
+
+def package_mac(release):
     shutil.rmtree('build/FontView.app', ignore_errors=True)
     os.mkdir('build/FontView.app')
     os.mkdir('build/FontView.app/Contents')
