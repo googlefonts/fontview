@@ -21,6 +21,7 @@
                 '../fribidi/fribidi.gyp:fribidi',
                 '../harfbuzz/harfbuzz.gyp:harfbuzz',
             ],
+            'cflags': ['-std=c99'],
         },
     ],
 }
