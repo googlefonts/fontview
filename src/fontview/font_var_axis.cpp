@@ -25,6 +25,8 @@
 #include "fontview/name_table.h"
 #include "fontview/util.h"
 
+#include <memory>
+
 namespace fontview {
 
 const FT_Tag FontVarAxis::weightTag = FT_MAKE_TAG('w', 'g', 'h', 't');

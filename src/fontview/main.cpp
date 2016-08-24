@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <set>
@@ -122,9 +123,13 @@ MyApp::MyApp()
 }
 
 bool MyApp::OpenFontFile(wxWindow* parent) {
-  const wxString path = wxLoadFileSelector(
-      wxT("font"), wxT("otf;ttf;otc;ttc;pfb"),  // what, extensions
-      wxEmptyString, parent);  // default_name, parent
+  const wxString path = wxFileSelector(
+      wxT("Load font file"),
+      wxEmptyString, wxEmptyString, wxEmptyString,
+      wxT("Font files (*.ttf, *.otf, *.otc, *.ttc, *.pfb, *.pfa)"
+          "|*.ttf;*.otf;*.otc;*.ttc;*.pfb;*.pfa"),
+      wxFD_OPEN | wxFD_FILE_MUST_EXIST,
+      parent);
   if (path.empty()) {
     return false;
   } else {

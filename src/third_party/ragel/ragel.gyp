@@ -3,6 +3,7 @@
         {
             'target_name': 'ragel',
             'type': 'executable',
+            'cflags': ['-std=gnu++98'],
             'sources': [
                 'ragel/ragel/cdcodegen.cpp',
                 'ragel/ragel/cdfflat.cpp',
