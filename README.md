@@ -1,7 +1,7 @@
 # FontView [![Build Status](https://travis-ci.org/googlei18n/fontview.svg)](https://travis-ci.org/googlei18n/fontview)
 
 “FontView” is a little demo app that shows the contents of a font
-file. It opens `*.ttf`, `*.otf`, `*.ttc`, `*.otf`, and `*.pfb`
+file. It opens `*.ttf`, `*.otf`, `*.ttc`, `*.otc`, `*.pfa`, and `*.pfb`
 files. To render text, FontView uses the open-source libraries
 [FreeType](https://www.freetype.org/),
 [HarfBuzz](https://www.freedesktop.org/wiki/Software/HarfBuzz/), and
