@@ -42,6 +42,7 @@ def build_unix(release):
         return False
     if os.system('make --directory build') != 0:
         return False
+    return True
 
 
 def package_mac(release):
