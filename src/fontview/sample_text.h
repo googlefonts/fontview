@@ -18,11 +18,10 @@
 #define FONTVIEW_SAMPLE_TEXT_
 
 #include <string>
+#include <vector>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
-#include <raqm.h>
 
 #include <wx/wx.h>
 
@@ -33,6 +32,7 @@ class SampleText : public wxScrolledCanvas {
   SampleText(wxWindow* parent);
   virtual ~SampleText();
   void SetText(const std::string& text);
+  void SetTextLanguage(const std::string& language);  // BCP47 code
   void SetFontFace(FT_Face fontFace);
   void SetFontSize(double size);
   void Paint();
@@ -46,9 +46,10 @@ class SampleText : public wxScrolledCanvas {
   void Paint(wxDC& dc);
   void DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph, double x, double y);
 
-  std::string text_;
+  std::vector<uint32_t> text_;
   FT_Face fontFace_;
   double fontSize_;
+  std::string textLanguage_;
 };
 
 }  // namespace fontview

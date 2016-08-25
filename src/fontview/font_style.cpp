@@ -25,6 +25,10 @@
 #include FT_TRUETYPE_TABLES_H
 #include FT_TYPES_H
 
+#include <hb.h>
+#include <hb-ft.h>
+#include <hb-ot.h>
+
 #include "fontview/font_style.h"
 #include "fontview/font_var_axis.h"
 #include "fontview/name_table.h"
@@ -199,7 +203,8 @@ FontStyle::FontStyle(FT_Face face,
     weight_(::fontview::GetWeight(face, variation)),
     width_(::fontview::GetWidth(face, variation)),
     slant_(::fontview::GetSlant(face, variation)),
-    axes_(axes), variation_(variation) {
+    axes_(axes), variation_(variation),
+    languages_(GetFontLanguages(face)) {
 }
 
 FontStyle::~FontStyle() {
@@ -277,6 +282,37 @@ double FontStyle::GetDistance(const Variation& var) const {
     result += delta * delta;
   }
 
+  return result;
+}
+
+static void AddLanguages(hb_face_t* face, hb_tag_t table,
+                         std::set<std::string>* result) {
+  unsigned int numScripts =
+      hb_ot_layout_table_get_script_tags(face, table, 0, NULL, NULL);
+  for (unsigned int scriptIndex = 0; scriptIndex < numScripts; ++scriptIndex) {
+    unsigned int numLangs =
+        hb_ot_layout_script_get_language_tags(face, table, scriptIndex, 0,
+                                              NULL, NULL);
+    if (numLangs > 0) {
+      hb_tag_t langs[numLangs];
+      hb_ot_layout_script_get_language_tags(face, table, scriptIndex, 0,
+                                            &numLangs, langs);
+
+      for (unsigned int i = 0; i < numLangs; ++i) {
+	hb_language_t language = hb_ot_tag_to_language(langs[i]);
+	result->insert(hb_language_to_string(language));
+      }
+    }
+  }
+}
+
+std::set<std::string> FontStyle::GetFontLanguages(FT_Face face) {
+  std::set<std::string> result;
+  hb_face_t* hb_face = hb_ft_face_create(face, NULL);
+  AddLanguages(hb_face, HB_OT_TAG_GSUB, &result);
+  AddLanguages(hb_face, HB_OT_TAG_GPOS, &result);
+  AddLanguages(hb_face, HB_OT_TAG_JSTF, &result);
+  hb_face_destroy(hb_face);
   return result;
 }
 

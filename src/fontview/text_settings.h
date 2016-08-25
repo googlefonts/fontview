@@ -72,6 +72,10 @@ class TextSettings {
   double GetFontSize() const { return fontSize_; }
   void SetFontSize(double size);
 
+  const std::string& GetTextLanguage() const { return textLanguage_; }
+  void SetTextLanguage(const std::string& language);
+  const std::set<std::string>& GetSupportedTextLanguages() const;
+
  private:
   static const double defaultFontSize;
 
@@ -86,6 +90,8 @@ class TextSettings {
   std::vector<FontStyle*> styles_;
   std::set<std::string> families_;
   std::string family_;
+  std::string textLanguage_;
+  std::set<std::string> supportedTextLanguages_;
   FontStyle* style_;
   FontStyle::Variation variation_;
   double fontSize_;

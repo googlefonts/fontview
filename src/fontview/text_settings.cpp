@@ -25,6 +25,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <hb.h>
+
 #include "fontview/font_style.h"
 #include "fontview/font_var_axis.h"
 #include "fontview/name_table.h"
@@ -202,6 +204,23 @@ void TextSettings::SetFontSize(double size) {
   }
 }
 
+void TextSettings::SetTextLanguage(const std::string& language) {
+  if (language != textLanguage_) {
+    textLanguage_ = language;
+    NotifyListeners();
+  }
+}
+
+const static std::set<std::string> emptyStringSet;
+
+const std::set<std::string>& TextSettings::GetSupportedTextLanguages() const {
+  if (style_) {
+    return style_->GetLanguages();
+  } else {
+    return emptyStringSet;
+  }
+}
+
 bool TextSettings::SetStyleWithoutNotification(FontStyle* style) {
   // Reject FontStyles that are not owned by us.
   if (style != NULL &&
@@ -223,6 +242,8 @@ bool TextSettings::SetStyleWithoutNotification(FontStyle* style) {
 }
 
 void TextSettings::Clear() {
+  textLanguage_ = "und";
+  supportedTextLanguages_.clear();
   fontSize_ = defaultFontSize;
   variation_.clear();
   style_ = NULL;

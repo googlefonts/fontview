@@ -16,6 +16,8 @@
 
 #include <string>
 
+#include <fribidi.h>
+
 #include <ft2build.h>
 #include FT_BITMAP_H
 #include FT_FREETYPE_H
@@ -31,14 +33,22 @@ namespace fontview {
 
 SampleText::SampleText(wxWindow* parent)
   : wxScrolledCanvas(parent, wxID_ANY),
-    fontFace_(NULL), fontSize_(12.0) {
+    fontFace_(NULL), fontSize_(12.0), textLanguage_("und") {
 }
 
 SampleText::~SampleText() {
 }
 
 void SampleText::SetText(const std::string& text) {
-  text_ = text;
+  text_.resize(text.size());
+  size_t numChars =
+    fribidi_charset_to_unicode(FRIBIDI_CHAR_SET_UTF8,
+			       text.data(), text.size(), &text_.front());
+  text_.resize(numChars);
+}
+
+void SampleText::SetTextLanguage(const std::string& language) {
+  textLanguage_ = language;
 }
 
 void SampleText::SetFontFace(FT_Face fontFace) {
@@ -185,9 +195,11 @@ void SampleText::Paint(wxDC& dc) {
   }
 
   raqm_t* layout = raqm_create();
-  raqm_set_text_utf8(layout, text_.c_str(), text_.size());
-  raqm_set_par_direction(layout, RAQM_DIRECTION_DEFAULT);
-  if (!raqm_set_freetype_face(layout, fontFace_) || !raqm_layout(layout)) {
+  if (!raqm_set_text(layout, &text_.front(), text_.size()) ||
+      !raqm_set_par_direction(layout, RAQM_DIRECTION_DEFAULT) ||
+      !raqm_set_language(layout, textLanguage_.c_str(), 0, text_.size()) ||
+      !raqm_set_freetype_face(layout, fontFace_) ||
+      !raqm_layout(layout)) {
     raqm_destroy(layout);
     return;
   }

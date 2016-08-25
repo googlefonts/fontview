@@ -19,6 +19,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -47,7 +48,11 @@ class FontStyle {
   double GetDistance(const Variation& var) const;
   const Variation& GetVariation() const { return variation_; }
 
+  const std::set<std::string>& GetLanguages() const { return languages_; }
+
  private:
+  static std::set<std::string> GetFontLanguages(FT_Face face);
+
   FontStyle(FT_Face face, const std::string& family, const std::string& name,
             std::vector<FontVarAxis*>* axes,  // takes ownership
             const Variation& variation);
@@ -58,6 +63,7 @@ class FontStyle {
   const double weight_, width_, slant_;
   std::unique_ptr<std::vector<FontVarAxis*>> axes_;  // also owning elements
   const Variation variation_;
+  const std::set<std::string> languages_;
 };
 
 }  // namespace fontview
