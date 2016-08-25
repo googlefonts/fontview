@@ -213,11 +213,13 @@ void SampleText::Paint(wxDC& dc) {
   const double border =  2 * scale;
   double x = border, y = border + ascender;
   for (size_t i = 0; i < numGlyphs; ++i) {
+    // Even though x_offset is getting added, y_offset wants to be subtracted.
+    // See https://github.com/googlei18n/fontview/issues/2 for pictures.
     double glyphX = x + glyphs[i].x_offset / (scale * 64.0);
-    double glyphY = y + glyphs[i].y_offset / (scale * 64.0);
+    double glyphY = y - glyphs[i].y_offset / (scale * 64.0);
     DrawGlyph(dc, glyphs[i].ftface, glyphs[i].index, glyphX, glyphY);
     x += glyphs[i].x_advance / (scale * 64.0);
-    y += glyphs[i].y_advance / (scale * 64.0);
+    y -= glyphs[i].y_advance / (scale * 64.0);
   }
 
   raqm_destroy(layout);
