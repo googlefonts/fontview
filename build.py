@@ -47,6 +47,7 @@ def build_unix(release):
 
 def package_mac(release):
     shutil.rmtree('build/FontView.app', ignore_errors=True)
+    shutil.rmtree('build/fontview-osx.zip', ignore_errors=True)
     os.mkdir('build/FontView.app')
     os.mkdir('build/FontView.app/Contents')
     os.mkdir('build/FontView.app/Contents/MacOS')
@@ -68,11 +69,9 @@ def package_mac(release):
     if release:
         cwd = os.getcwd()
         os.chdir('build')
-        if os.system('zip -r FontView-MacOS.zip FontView.app') != 0:
+        if os.system('zip -r fontview-osx.zip FontView.app') != 0:
             return False
         os.chdir(cwd)
-    else:
-        shutil.rmtree('build/FontView-MacOS.zip', ignore_errors=True)
     return True
 
 

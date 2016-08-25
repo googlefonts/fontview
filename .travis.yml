@@ -12,3 +12,13 @@ install:
   - python2.7 build.py --release=FONTVIEW_VERSION
 
 script: true
+
+deploy:
+  provider: releases
+  api_key:
+    secure: U51+hCE/eCjBUV7m/H0/6Szq/k9QXU3ad/uZmdy1I0bOGRXF/+BMpUcbkZZMmEAUm93vjw9LoQ5x/toFDvcybQBdzWXpoI9DtQxVC373dPSSl9v+eLV0SZNP0Bf0DtTF/0MDsLMlqzA1roUJ+57MTd5LkUiLiHjZw1S+wdNqvKvqqIEOcGxXpGbXNm+BBnQNfbSgpQNB3MxIiy3XLuNysw+9Hc7ayNqsJ3bPme7JyGWOn7OA6zGd7jEEFEM4iT9iDxScbe0jF1L8OLwuDUyLy6xM4JM0EfaOnrzB3lEpzTfkM9v2YQU8Vur8koF9dBQ8YLyZ3eWgHcV4IgHY2u7kcEKInSPv6B1VhhWRTIWfqr5+tQ9GX9giQCQWEdSVZJZxKloG+5zFA1AO+/P/a+PFG5hD6THoLhOuEzWg41sNIihN2tlvXr3BOVV1jZtP5Ja7kzwJUp6+0yVTFeRiE/kq89DyRjaIibyvS6W3PH11e5+7V7Gh62seHrvh44F9/8cH0pjZlU4E9xmCI0XJTEsHRR1EzYS9IJTtvRei8wrkSIo6MR8Sydb0WtDv/oM1bKJd8u0Ub5NmeYduyv6NezNyX71iMPRwpzUdH1enHI79GJZzku0RLYGXAJVEB9MMZK1z/IAhUXEU0jR+rD3LvC75SKhJlpyJUuhC9Rda6X3qcdM=
+  file: build/fontview-$TRAVIS_OS_NAME.zip
+  skip_cleanup: true
+  on:
+    repo: googlei18n/fontview
+    tags: true
