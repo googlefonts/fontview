@@ -68,7 +68,7 @@ class MyFrame : public wxFrame {
  private:
   void OnOpen(wxCommandEvent& event);
   void OnClose(wxCommandEvent& event);
-  void OnHello(wxCommandEvent& event);
+  void OnChangeSampleText(wxCommandEvent& event);
   void OnExit(wxCommandEvent& event);
   void OnAbout(wxCommandEvent& event);
   void OnFamilyChoiceChanged(wxCommandEvent& event);
@@ -195,10 +195,30 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   fileMenu->AppendSeparator();
   fileMenu->Append(wxID_EXIT);
 
+  wxMenu* editMenu = new wxMenu();
+  editMenu->Append(wxID_UNDO);
+  editMenu->Enable(wxID_UNDO, false);
+  editMenu->Append(wxID_REDO);
+  editMenu->Enable(wxID_REDO, false);
+  editMenu->AppendSeparator();
+  editMenu->Append(wxID_CUT);
+  editMenu->Enable(wxID_CUT, false);
+  editMenu->Append(wxID_COPY);
+  editMenu->Enable(wxID_COPY, false);
+  editMenu->Append(wxID_PASTE);
+  editMenu->Enable(wxID_PASTE, false);
+  editMenu->Append(wxID_CLEAR);
+  editMenu->Enable(wxID_CLEAR, false);
+  editMenu->AppendSeparator();
+  wxMenuItem* changeSampleText =
+      editMenu->Append(wxID_ANY, "Change Sample Text...\tCtrl+T");
+  editMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MyFrame::OnChangeSampleText, this, changeSampleText->GetId());
+
   wxMenu* helpMenu = new wxMenu();
   helpMenu->Append(wxID_ABOUT, wxT("About FontView"));
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
+  menuBar->Append(editMenu, "&Edit");
   menuBar->Append(helpMenu, "&Help");
   SetMenuBar(menuBar);
 
@@ -272,6 +292,19 @@ void MyFrame::OnClose(wxCommandEvent& event) {
 
 void MyFrame::OnExit(wxCommandEvent& event) {
   wxExit();
+}
+
+// TODO: Replace the modal dialog with direct manipulation.
+// The current user interface is rather terrible, but it took
+// just a few minutes to implement.
+void MyFrame::OnChangeSampleText(wxCommandEvent& event) {
+  wxTextEntryDialog dialog(this, "Please enter the new sample text:",
+			   "Change Sample Text", sampleText_->GetText());
+  if (dialog.ShowModal() != wxID_OK) {
+    return;
+  }
+  sampleText_->SetText(dialog.GetValue().ToStdString());
+  sampleText_->Paint();
 }
 
 void MyFrame::OnAbout(wxCommandEvent& event) {

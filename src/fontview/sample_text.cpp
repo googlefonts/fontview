@@ -45,6 +45,7 @@ void SampleText::SetText(const std::string& text) {
     fribidi_charset_to_unicode(FRIBIDI_CHAR_SET_UTF8,
 			       text.data(), text.size(), &text_.front());
   text_.resize(numChars);
+  text_utf8_.assign(text);
 }
 
 void SampleText::SetTextLanguage(const std::string& language) {

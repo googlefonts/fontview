@@ -31,6 +31,7 @@ class SampleText : public wxScrolledCanvas {
  public:
   SampleText(wxWindow* parent);
   virtual ~SampleText();
+  const std::string& GetText() const { return text_utf8_; }
   void SetText(const std::string& text);
   void SetTextLanguage(const std::string& language);  // BCP47 code
   void SetFontFace(FT_Face fontFace);
@@ -46,6 +47,7 @@ class SampleText : public wxScrolledCanvas {
   void Paint(wxDC& dc);
   void DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph, double x, double y);
 
+  std::string text_utf8_;
   std::vector<uint32_t> text_;
   FT_Face fontFace_;
   double fontSize_;
