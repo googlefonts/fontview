@@ -9,7 +9,7 @@ compiler:
 
 install:
   - export FONTVIEW_VERSION=$TRAVIS_TAG
-  - python2.7 build.py --release=FONTVIEW_VERSION
+  - python2.7 build.py --release=$FONTVIEW_VERSION
 
 script: true
 
