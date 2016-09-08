@@ -8,7 +8,7 @@ files. To render text, FontView uses the open-source libraries
 [Raqm](http://host-oman.github.io/libraqm/). FontView is not an
 official Google product; use it at your own risk.
 
-![Screenshot](doc/FontView-MacOS.png)
+![Screenshot](doc/fontview-v0.1.2.png)
 
 You’re very welcome to [contribute changes](CONTRIBUTING.md),
 for example if you’d like porting the tool to other platforms.
