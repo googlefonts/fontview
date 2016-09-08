@@ -82,7 +82,7 @@ std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
         }
         std::vector<FontVarAxis*>* axes = FontVarAxis::MakeAxes(face, names);
         result.push_back(
-          new FontStyle(face, familyName, instanceName, axes, variation));
+          new FontStyle(face, names, instanceName, axes, variation));
       }
     }
   }
@@ -110,8 +110,7 @@ std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
       }
       std::vector<FontVarAxis*>* axes = FontVarAxis::MakeAxes(face, names);
       result.push_back(
-          new FontStyle(face, familyName, styleName,
-                        axes, variation));
+          new FontStyle(face, names, styleName, axes, variation));
     }
   }
 
@@ -195,11 +194,11 @@ static double GetSlant(FT_Face face, const FontStyle::Variation& variation) {
 }
 
 FontStyle::FontStyle(FT_Face face,
-                     const std::string& family,
+                     const NameTable& names,
                      const std::string& styleName,
                      std::vector<FontVarAxis*>* axes,  // takes ownership
                      const Variation& variation)
-  : face_(face), family_(family), name_(styleName),
+  : face_(face), names_(names), styleName_(styleName),
     weight_(::fontview::GetWeight(face, variation)),
     width_(::fontview::GetWidth(face, variation)),
     slant_(::fontview::GetSlant(face, variation)),
@@ -251,6 +250,22 @@ FT_Face FontStyle::GetFace(const FontStyle::Variation& variation) const {
   }
 
   return face;
+}
+
+const std::string& FontStyle::GetFamilyName() const {
+  return GetFontFamilyName(names_);
+}
+
+static const std::string kQuickBrownFox =
+    "The quick brown fox jumps over the lazy dog.";
+
+const std::string& FontStyle::GetSampleText() const {
+  const std::string& sample = GetFontName(names_, 19);
+  if (!sample.empty()) {
+    return sample;
+  } else {
+    return kQuickBrownFox;
+  }
 }
 
 double FontStyle::GetDistance(const Variation& var) const {

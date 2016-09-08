@@ -33,19 +33,21 @@ namespace fontview {
 
 SampleText::SampleText(wxWindow* parent)
   : wxScrolledCanvas(parent, wxID_ANY),
+    hasCustomText_(false),
     fontFace_(NULL), fontSize_(12.0), textLanguage_("und") {
 }
 
 SampleText::~SampleText() {
 }
 
-void SampleText::SetText(const std::string& text) {
+void SampleText::SetText(const std::string& text, bool isCustom) {
   text_.resize(text.size());
   size_t numChars =
     fribidi_charset_to_unicode(FRIBIDI_CHAR_SET_UTF8,
 			       text.data(), text.size(), &text_.front());
   text_.resize(numChars);
   text_utf8_.assign(text);
+  hasCustomText_ = isCustom;
 }
 
 void SampleText::SetTextLanguage(const std::string& language) {

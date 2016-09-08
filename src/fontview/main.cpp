@@ -224,7 +224,6 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
 
   wxPanel* framePanel = new wxPanel(this);
   sampleText_ = new SampleText(framePanel);
-  sampleText_->SetText("The quick brown fox jumps over the lazy dog.");
   propertyPanel_ = new wxPanel(framePanel);
   wxPanel* stylePanel = new wxPanel(propertyPanel_);
   wxBoxSizer* framePanelSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -303,7 +302,7 @@ void MyFrame::OnChangeSampleText(wxCommandEvent& event) {
   if (dialog.ShowModal() != wxID_OK) {
     return;
   }
-  sampleText_->SetText(dialog.GetValue().ToStdString());
+  sampleText_->SetText(dialog.GetValue().ToStdString(), true);
   sampleText_->Paint();
 }
 
@@ -353,8 +352,13 @@ void MyFrame::OnTextSettingsChanged() {
 
   sizeControl_->SetValue(textSettings_->GetFontSize());
   if (sampleText_) {
+    FontStyle* curStyle = textSettings_->GetStyle();
+    if (!sampleText_->HasCustomText() && curStyle) {
+      sampleText_->SetText(curStyle->GetSampleText(), false);
+    }
     sampleText_->Paint();
   }
+
   processingModelChange_ = false;
 }
 

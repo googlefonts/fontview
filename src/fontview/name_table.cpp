@@ -120,6 +120,7 @@ wxFontEncoding GetFontNameEncoding(const FT_SfntName& name) {
     case TT_MS_ID_GB2312: return wxFONTENCODING_GB2312;
     case TT_MS_ID_BIG_5: return wxFONTENCODING_BIG5;
     case TT_MS_ID_JOHAB: return wxFONTENCODING_JOHAB;
+    case TT_MS_ID_UCS_4: return wxFONTENCODING_UTF16BE;
     default: break;
     }
   }

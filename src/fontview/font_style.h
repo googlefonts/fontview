@@ -38,8 +38,10 @@ class FontStyle {
   ~FontStyle();
 
   FT_Face GetFace(const Variation& variation) const;
-  const std::string& GetFamilyName() const { return family_; }
-  const std::string& GetStyleName() const { return name_; }
+  const std::string& GetFamilyName() const;
+  const std::string& GetStyleName() const { return styleName_; }
+  const std::string& GetSampleText() const;
+
   double GetWeight() const { return weight_; }
   double GetWidth() const { return width_; }
   double GetSlant() const { return slant_; }
@@ -53,13 +55,15 @@ class FontStyle {
  private:
   static std::set<std::string> GetFontLanguages(FT_Face face);
 
-  FontStyle(FT_Face face, const std::string& family, const std::string& name,
+  FontStyle(FT_Face face, const NameTable& names,
+            const std::string& styleName,
             std::vector<FontVarAxis*>* axes,  // takes ownership
             const Variation& variation);
 
   FT_Face face_;
+  NameTable names_;
   const std::string family_;
-  const std::string name_;
+  const std::string styleName_;
   const double weight_, width_, slant_;
   std::unique_ptr<std::vector<FontVarAxis*>> axes_;  // also owning elements
   const Variation variation_;

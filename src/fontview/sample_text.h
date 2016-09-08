@@ -32,7 +32,14 @@ class SampleText : public wxScrolledCanvas {
   SampleText(wxWindow* parent);
   virtual ~SampleText();
   const std::string& GetText() const { return text_utf8_; }
-  void SetText(const std::string& text);
+
+  // Is the sample text a standard "quick brown fox" pangram (or equivalent
+  // from the font's name table)? If this function returns true, the
+  // text is something special so it should not be replaced when switching
+  // fonts.
+  bool HasCustomText() const { return hasCustomText_; }
+
+  void SetText(const std::string& text, bool isCustom);
   void SetTextLanguage(const std::string& language);  // BCP47 code
   void SetFontFace(FT_Face fontFace);
   void SetFontSize(double size);
@@ -47,6 +54,7 @@ class SampleText : public wxScrolledCanvas {
   void Paint(wxDC& dc);
   void DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph, double x, double y);
 
+  bool hasCustomText_;
   std::string text_utf8_;
   std::vector<uint32_t> text_;
   FT_Face fontFace_;
