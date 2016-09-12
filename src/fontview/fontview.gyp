@@ -14,6 +14,7 @@
       'include_dirs': [
         '..',
       ],
+      'cflags': ['-std=c++11'],
       'defines': [
         'FONTVIEW_VERSION=' + '<!(echo $FONTVIEW_VERSION)',
       ],
