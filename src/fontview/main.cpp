@@ -189,7 +189,8 @@ void MyApp::OnInitCmdLine(wxCmdLineParser& parser) {
 bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser) {
   wxString sampleText;
   if (parser.Found("t", &sampleText) && !sampleText.empty()) {
-    defaultSampleText_.assign(sampleText.ToStdString());
+    // mb_str() needed on GTK+, where wxWidgets doesn't use UTF-8 internally.
+    defaultSampleText_.assign(sampleText.mb_str(wxConvUTF8));
   }
 
   for (size_t i = 0; i < parser.GetParamCount(); ++i) {
@@ -334,12 +335,20 @@ void MyFrame::OnExit(wxCommandEvent& event) {
 // The current user interface is rather terrible, but it took
 // just a few minutes to implement.
 void MyFrame::OnChangeSampleText(wxCommandEvent& event) {
+  // The cumbersome conversions are needed for wxWidgets on GTK+
+  // which apparently does not use UTF-8 internally.
+  const std::string& oldSample = sampleText_->GetText();
+  wxString oldSampleString =
+      wxString::FromUTF8(oldSample.c_str(), oldSample.length());
   wxTextEntryDialog dialog(this, "Please enter the new sample text:",
-			   "Change Sample Text", sampleText_->GetText());
+			   "Change Sample Text", oldSampleString);
   if (dialog.ShowModal() != wxID_OK) {
     return;
   }
-  sampleText_->SetText(dialog.GetValue().ToStdString(), true);
+
+  // This is needed on GTK+, where wxWidgets doesn't use UTF8 internally.
+  std::string text(dialog.GetValue().mb_str(wxConvUTF8));
+  sampleText_->SetText(text, true);
   sampleText_->Paint();
 }
 
