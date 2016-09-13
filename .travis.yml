@@ -2,10 +2,18 @@ language: cpp
 sudo: false
 
 os:
+  - linux
   - osx
 
 compiler:
   - clang
+
+addons:
+  apt:
+    packages:
+    - libfreetype6-dev
+    - libfribidi-dev
+    - libharfbuzz-dev
 
 install:
   - export FONTVIEW_VERSION=$TRAVIS_TAG
