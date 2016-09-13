@@ -40,8 +40,10 @@ static const FT_Tag weightTag = FT_MAKE_TAG('w', 'g', 'h', 't');
 static const FT_Tag widthTag = FT_MAKE_TAG('w', 'd', 't', 'h');
 static const FT_Tag slantTag = FT_MAKE_TAG('s', 'l', 'n', 't');
 
-std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
-                                             const NameTable& names) {
+std::vector<FontStyle*> FontStyle::GetStyles(
+    FT_Face face,
+    const NameTable& names,
+    const std::string& defaultSampleText) {
   std::vector<FontStyle*> result;
   const std::string& familyName = GetFontFamilyName(names);
   if (familyName.empty()) {
@@ -82,7 +84,8 @@ std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
         }
         std::vector<FontVarAxis*>* axes = FontVarAxis::MakeAxes(face, names);
         result.push_back(
-          new FontStyle(face, names, instanceName, axes, variation));
+            new FontStyle(face, names, instanceName, axes, variation,
+                          defaultSampleText));
       }
     }
   }
@@ -110,7 +113,8 @@ std::vector<FontStyle*> FontStyle::GetStyles(FT_Face face,
       }
       std::vector<FontVarAxis*>* axes = FontVarAxis::MakeAxes(face, names);
       result.push_back(
-          new FontStyle(face, names, styleName, axes, variation));
+         new FontStyle(face, names, styleName, axes, variation,
+		       defaultSampleText));
     }
   }
 
@@ -197,13 +201,15 @@ FontStyle::FontStyle(FT_Face face,
                      const NameTable& names,
                      const std::string& styleName,
                      std::vector<FontVarAxis*>* axes,  // takes ownership
-                     const Variation& variation)
+                     const Variation& variation,
+		     const std::string& defaultSampleText)
   : face_(face), names_(names), styleName_(styleName),
     weight_(::fontview::GetWeight(face, variation)),
     width_(::fontview::GetWidth(face, variation)),
     slant_(::fontview::GetSlant(face, variation)),
     axes_(axes), variation_(variation),
-    languages_(GetFontLanguages(face)) {
+    languages_(GetFontLanguages(face)),
+    defaultSampleText_(defaultSampleText) {
 }
 
 FontStyle::~FontStyle() {
@@ -256,15 +262,12 @@ const std::string& FontStyle::GetFamilyName() const {
   return GetFontFamilyName(names_);
 }
 
-static const std::string kQuickBrownFox =
-    "The quick brown fox jumps over the lazy dog.";
-
 const std::string& FontStyle::GetSampleText() const {
   const std::string& sample = GetFontName(names_, 19);
   if (!sample.empty()) {
     return sample;
   } else {
-    return kQuickBrownFox;
+    return defaultSampleText_;
   }
 }
 

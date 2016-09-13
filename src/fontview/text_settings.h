@@ -40,7 +40,7 @@ typedef std::map<int, std::string> NameTable;
 // In the model/view/controller paradigm, this is a model class.
 class TextSettings {
  public:
-  TextSettings();
+  TextSettings(const std::string& defaultSampleText);
   ~TextSettings();
 
   // Listeners get notified after the model has changed.
@@ -83,6 +83,7 @@ class TextSettings {
   bool SetStyleWithoutNotification(FontStyle* style);
   void NotifyListeners();
 
+  std::string defaultSampleText_;
   std::vector<Listener*> listeners_;
   std::string fontContainerPath_;
   std::vector<FT_Face> faces_;

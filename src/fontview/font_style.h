@@ -34,7 +34,8 @@ class FontStyle {
  public:
   typedef std::map<FT_Tag, double> Variation;
   static std::vector<FontStyle*> GetStyles(
-      FT_Face face, const NameTable& names);
+      FT_Face face, const NameTable& names,
+      const std::string& defaultSampleText);
   ~FontStyle();
 
   FT_Face GetFace(const Variation& variation) const;
@@ -58,7 +59,8 @@ class FontStyle {
   FontStyle(FT_Face face, const NameTable& names,
             const std::string& styleName,
             std::vector<FontVarAxis*>* axes,  // takes ownership
-            const Variation& variation);
+            const Variation& variation,
+	    const std::string& defaultSampleText);
 
   FT_Face face_;
   NameTable names_;
@@ -68,6 +70,7 @@ class FontStyle {
   std::unique_ptr<std::vector<FontVarAxis*>> axes_;  // also owning elements
   const Variation variation_;
   const std::set<std::string> languages_;
+  std::string defaultSampleText_;
 };
 
 }  // namespace fontview

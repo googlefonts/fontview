@@ -94,7 +94,8 @@ static std::vector<FT_Face>* LoadFaces(const std::string& path) {
 }
 
 
-TextSettings::TextSettings() {
+TextSettings::TextSettings(const std::string& defaultSampleText)
+  : defaultSampleText_(defaultSampleText) {
   Clear();
 }
 
@@ -131,7 +132,10 @@ bool TextSettings::SetFontContainer(const std::string& path) {
   }
 
   for (size_t i = 0; i < faces_.size(); ++i) {
-    for (FontStyle* s : FontStyle::GetStyles(faces_[i], *faceNameTables_[i])) {
+    std::vector<FontStyle*> styles =
+        FontStyle::GetStyles(faces_[i], *faceNameTables_[i],
+			     defaultSampleText_);
+    for (FontStyle* s : styles) {
       styles_.push_back(s);
     }
   }

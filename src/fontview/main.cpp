@@ -57,9 +57,11 @@ class MyApp : public wxApp {
   virtual void MacOpenFile(const wxString& fileName);
   
   bool OpenFontFile(wxWindow* parent);
+  const std::string& GetDefaultSampleText() const { return defaultSampleText_; }
 
  private:
   int numDocuments_;
+  std::string defaultSampleText_;
 };
 
 
@@ -126,7 +128,8 @@ FT_Library GetFreeTypeLibrary() {
 }  // namespace fontview
 
 MyApp::MyApp()
-  : numDocuments_(0) {
+  : numDocuments_(0),
+    defaultSampleText_("The quick brown fox jumps over the lazy dog.") {
 }
 
 bool MyApp::OpenFontFile(wxWindow* parent) {
@@ -150,7 +153,8 @@ void MyApp::MacNewFile() {
 }
 
 void MyApp::MacOpenFile(const wxString& path) {
-  std::unique_ptr<TextSettings> textSettings(new TextSettings());
+  std::unique_ptr<TextSettings> textSettings(
+      new TextSettings(defaultSampleText_));
   if (!textSettings->SetFontContainer(path.ToStdString())) {
     wxMessageBox("FontView does not understand "
                  "the format of the selected file.",
@@ -177,11 +181,17 @@ bool MyApp::OnInit() {
 }
 
 void MyApp::OnInitCmdLine(wxCmdLineParser& parser) {
+  parser.AddOption(wxT("t"), wxT("text"), wxT("sample text"));
   parser.AddParam(wxT("font.otf"), wxCMD_LINE_VAL_STRING,
 		  wxCMD_LINE_PARAM_MULTIPLE);
 }
 
 bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser) {
+  wxString sampleText;
+  if (parser.Found("t", &sampleText) && !sampleText.empty()) {
+    defaultSampleText_.assign(sampleText.ToStdString());
+  }
+
   for (size_t i = 0; i < parser.GetParamCount(); ++i) {
     const std::string param = parser.GetParam(i).ToStdString();
     MacOpenFile(param.c_str());
