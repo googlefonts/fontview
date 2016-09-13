@@ -368,7 +368,8 @@ void MyFrame::OnTextSettingsChanged() {
       double fraction = (iter->second - s.axis->GetMinValue()) /
 	(s.axis->GetMaxValue() - s.axis->GetMinValue());
       fraction = fontview::clamp(fraction, 0.0, 1.0);
-      s.slider->SetValue(static_cast<int>(fraction * 1000000));
+      s.slider->SetRange(0, 1000);
+      s.slider->SetValue(static_cast<int>(fraction * 1000));
     }
   }
 
@@ -479,7 +480,12 @@ void MyFrame::RebuildAxisSliders() {
       AxisSlider s;
       s.axis = axis;
       s.title = new wxStaticText(propertyPanel_, wxID_ANY, title);
-      s.slider = new wxSlider(propertyPanel_, wxID_ANY, 0, 0, 1000000);
+      s.slider = new wxSlider(propertyPanel_, wxID_ANY, 0, 0, 1000);
+      wxSize size = s.slider->GetBestSize();
+      if (size.x < 150) {
+	size.x = 150;
+      }
+      s.slider->SetMinSize(size);
       axisSliders_.push_back(s);
       axisSizer_->Add(s.title, wxGBPosition(row, 0), wxDefaultSpan);
       axisSizer_->Add(s.slider, wxGBPosition(row, 1), wxDefaultSpan);
@@ -1172,7 +1178,7 @@ void MyFrame::OnAxisSliderChanged(wxCommandEvent& event) {
   FontStyle::Variation var;
   for (const AxisSlider& s : axisSliders_) {
     double range = s.axis->GetMaxValue() - s.axis->GetMinValue();
-    double fraction = static_cast<double>(s.slider->GetValue()) / 1000000;
+    double fraction = static_cast<double>(s.slider->GetValue()) / 1000;
     double value = s.axis->GetMinValue() + fraction * range;
     var[s.axis->GetTag()] = value;
   }
