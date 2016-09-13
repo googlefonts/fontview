@@ -492,8 +492,8 @@ void MyFrame::RebuildAxisSliders() {
       s.title = new wxStaticText(propertyPanel_, wxID_ANY, title);
       s.slider = new wxSlider(propertyPanel_, wxID_ANY, 0, 0, 1000);
       wxSize size = s.slider->GetBestSize();
-      if (size.x < 150) {
-	size.x = 150;
+      if (size.x < 200) {
+	size.x = 200;
       }
       s.slider->SetMinSize(size);
       axisSliders_.push_back(s);
