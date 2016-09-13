@@ -173,10 +173,9 @@ void SampleText::Paint(wxDC& dc) {
 
   dc.Clear();
   const double scale = dc.GetContentScaleFactor();
-  const wxSize dpi = dc.GetPPI();  // dots/pixels per inch
   const FT_F26Dot6 size =
       static_cast<FT_F26Dot6>(fontSize_ * 64 * scale + 0.5);
-  if (FT_Set_Char_Size(fontFace_, size, size, dpi.x, dpi.y)) {
+  if (FT_Set_Char_Size(fontFace_, size, size, 0, 0)) {
     return;
   }
 
