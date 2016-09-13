@@ -185,6 +185,7 @@ void SampleText::Paint(wxDC& dc) {
       !raqm_set_language(layout, textLanguage_.c_str(), 0, text_.size()) ||
       !raqm_set_freetype_face(layout, fontFace_) ||
       !raqm_add_font_feature(layout, "ss02", -1) ||  // TODO: Hack for demo
+      // !raqm_set_line_width(layout, GetSize().x - 8) ||
       !raqm_layout(layout)) {
     raqm_destroy(layout);
     return;
@@ -195,7 +196,7 @@ void SampleText::Paint(wxDC& dc) {
        static_cast<double>(fontFace_->units_per_EM));
   size_t numGlyphs = 0;
   raqm_glyph_t* glyphs = raqm_get_glyphs(layout, &numGlyphs);
-  const double border =  2 * scale;
+  const double border = 4 * scale;
   double x = border, y = border + ascender;
   for (size_t i = 0; i < numGlyphs; ++i) {
     // Even though x_offset is getting added, y_offset wants to be subtracted.
