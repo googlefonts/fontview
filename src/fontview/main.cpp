@@ -25,6 +25,7 @@
 
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
+#include <wx/cmdline.h>
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
 #include <wx/slider.h>
@@ -49,9 +50,12 @@ class MyApp : public wxApp {
  public:
   MyApp();
   virtual bool OnInit();
+  virtual void OnInitCmdLine(wxCmdLineParser& parser);
+  virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
 
   virtual void MacNewFile() ;
   virtual void MacOpenFile(const wxString& fileName);
+  
   bool OpenFontFile(wxWindow* parent);
 
  private:
@@ -169,12 +173,30 @@ bool MyApp::OnInit() {
     wxExit();
   }
 
-#if defined(__WXOSX__) && __WXOSX__
-  return true;
-#else
-  return OpenFontFile(NULL);
-#endif
+  return wxApp::OnInit();
 }
+
+void MyApp::OnInitCmdLine(wxCmdLineParser& parser) {
+  parser.AddParam(wxT("font.otf"), wxCMD_LINE_VAL_STRING,
+		  wxCMD_LINE_PARAM_MULTIPLE);
+}
+
+bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser) {
+  for (size_t i = 0; i < parser.GetParamCount(); ++i) {
+    const std::string param = parser.GetParam(i).ToStdString();
+    MacOpenFile(param.c_str());
+  }
+
+  // On MacOS, we show the file-opening dialog upon receiving an AppleEvent.
+#if !(defined(__WXOSX__) &&__WXOSX__)
+  if (numDocuments_ == 0) {
+    return OpenFontFile(NULL);
+  }
+#endif
+
+  return true;
+}
+
 
 MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
                  TextSettings* textSettings)
