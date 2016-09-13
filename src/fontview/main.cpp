@@ -183,7 +183,7 @@ bool MyApp::OnInit() {
 void MyApp::OnInitCmdLine(wxCmdLineParser& parser) {
   parser.AddOption(wxT("t"), wxT("text"), wxT("sample text"));
   parser.AddParam(wxT("font.otf"), wxCMD_LINE_VAL_STRING,
-		  wxCMD_LINE_PARAM_MULTIPLE);
+		  wxCMD_LINE_PARAM_MULTIPLE | wxCMD_LINE_PARAM_OPTIONAL);
 }
 
 bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser) {
