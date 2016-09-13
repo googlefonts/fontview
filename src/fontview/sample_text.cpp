@@ -77,23 +77,6 @@ void SampleText::OnPaint(wxPaintEvent& event) {
   Paint(dc);
 }
 
-static void FillBlack(wxBitmap* bitmap) {
-  wxNativePixelData data(*bitmap);
-  if (!data) {
-    return;
-  }
-
-  wxNativePixelData::Iterator pixel(data);
-  const int maxX = data.GetWidth(), maxY = data.GetHeight();
-  for (int y = 0; y < maxY; ++y) {
-    pixel.MoveTo(data, 0, y);
-    for (int x = 0; x < maxX; ++x) {
-      pixel.Red() = pixel.Green() = pixel.Blue() = 0;
-      ++pixel;
-    }
-  }
-}
-
 static void CopyAlpha(const FT_Bitmap& source,
                       int leftOffset, int topOffset,
                       wxBitmap* target) {
@@ -111,6 +94,7 @@ static void CopyAlpha(const FT_Bitmap& source,
       const uint8_t* ftAlpha = source.buffer + sourceY * source.pitch;
       for (int x = 0; x < maxX; ++x) {
 	const int sourceX = x - leftOffset;
+	pixel.Red() = pixel.Green() = pixel.Blue() = 0;
 	if (sourceX >= 0 && sourceX < source.width) {
 	  pixel.Alpha() = ftAlpha[sourceX];
 	} else {
@@ -119,7 +103,7 @@ static void CopyAlpha(const FT_Bitmap& source,
 	++pixel;
       }
     } else {
-      pixel.Alpha() = 0;
+      pixel.Red() = pixel.Green() = pixel.Blue() = pixel.Alpha() = 0;
       ++pixel;
     }
   }
@@ -175,7 +159,6 @@ void SampleText::DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph,
   if (bitmap.CreateScaled(ceil(width / scale) + leftOffset,
 			  ceil(height / scale) + topOffset,
 			  32, scale)) {
-    FillBlack(&bitmap);
     CopyAlpha(ftBitmap, leftOffset, topOffset, &bitmap);
     dc.DrawBitmap(bitmap, xPos, yPos);
   }
