@@ -64,7 +64,10 @@ def build_linux(release):
         '-Isrc', '-Isrc/third_party/raqm/libraqm/src',
         '-DFONTVIEW_VERSION=%s' % release,
         'build/raqm.o', '-o', 'build/fontview'] + fontview_sources)
-    subprocess.check_call(['zip', 'build/fontview-linux.zip', 'build/fontview'])
+    if release:
+        subprocess.check_call([
+            'zip', 'build/fontview-linux.zip', 'build/fontview'])
+    return True
 
 
 def package_mac(release):
