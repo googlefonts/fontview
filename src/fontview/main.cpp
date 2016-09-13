@@ -217,6 +217,11 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
     familyChoice_(NULL), styleChoice_(NULL), sizeControl_(NULL),
     axisSizer_(new wxGridBagSizer(0, 4)),
     languageChoice_(NULL) {
+#if !(defined(__WXOSX__) &&__WXOSX__)
+  // Method not available on OSX; it always does double-buffering anyway.
+  SetDoubleBuffered(true);
+#endif
+  
   textSettings_->AddListener(&textSettingsListener_);
 
   wxMenu* fileMenu = new wxMenu();
