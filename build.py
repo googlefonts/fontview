@@ -49,18 +49,21 @@ def build_linux(release):
     if os.path.exists('build'):
         shutil.rmtree('build')
     os.mkdir('build')
-    pkg_config = subprocess.check_output(
-        'pkg-config --cflags --libs freetype2 harfbuzz fribidi'.split()).split()
+    pkg_cflags = subprocess.check_output(
+        'pkg-config --cflags freetype2 harfbuzz fribidi'.split()).split()
+    pkg_libs = subprocess.check_output(
+        'pkg-config --libs freetype2 harfbuzz fribidi'.split()).split()
     wx_config = subprocess.check_output(
         'wx-config --cflags --libs base,std,propgrid,qa'.split()).split()
-    subprocess.check_call(['clang', '-c', '-std=c99'] + pkg_config + [
+    subprocess.check_call(['cc', '-c', '-std=c99'] + pkg_cflags + [
         '-Isrc/third_party/raqm/libraqm/src',
         '-o', 'build/raqm.o', 'src/third_party/raqm/libraqm/src/raqm.c'])
     fontview_path = 'src/fontview'
     fontview_sources = ['%s/%s' % (fontview_path, s)
                         for s in os.listdir(fontview_path)
                         if s.endswith('.cpp')]
-    subprocess.check_call(['clang++', '-std=c++11'] + pkg_config + wx_config + [
+    subprocess.check_call([
+        'c++', '-std=c++11'] + pkg_cflags + pkg_libs + wx_config + [
         '-Isrc', '-Isrc/third_party/raqm/libraqm/src',
         '-DFONTVIEW_VERSION=%s' % release,
         'build/raqm.o', '-o', 'build/fontview'] + fontview_sources)
