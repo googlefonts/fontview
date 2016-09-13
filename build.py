@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse, codecs, shutil, os, sys
+import argparse, codecs, shutil, subprocess, os, sys
 
 def main():
     parser = argparse.ArgumentParser(
@@ -26,15 +26,15 @@ def main():
     platform = os.uname()[0]
     release = args.release if args.release else ''
     if platform == 'Linux':
-        success = build_unix(release)
+        success = build_linux(release)
     elif platform == 'Darwin':
-        success = build_unix(release) and package_mac(release)
+        success = build_mac(release) and package_mac(release)
     else:
         sys.stderr.write('Unsupported platform \"%s\"' % platform + os.linesep)
     sys.exit(0 if success else 1)
 
 
-def build_unix(release):
+def build_mac(release):
     if os.system('FONTVIEW_VERSION=\"%s\" '
                  './src/third_party/gyp/gyp -f make --depth . '
                  '--generator-output build  src/fontview/fontview.gyp' %
@@ -43,6 +43,28 @@ def build_unix(release):
     if os.system('make --directory build') != 0:
         return False
     return True
+
+
+def build_linux(release):
+    if os.path.exists('build'):
+        shutil.rmtree('build')
+    os.mkdir('build')
+    pkg_config = subprocess.check_output(
+        'pkg-config --cflags --libs freetype2 harfbuzz fribidi'.split()).split()
+    wx_config = subprocess.check_output(
+        'wx-config --cflags --libs base,std,propgrid,qa'.split()).split()
+    subprocess.check_call(['clang', '-c', '-std=c99'] + pkg_config + [
+        '-Isrc/third_party/raqm/libraqm/src',
+        '-o', 'build/raqm.o', 'src/third_party/raqm/libraqm/src/raqm.c'])
+    fontview_path = 'src/fontview'
+    fontview_sources = ['%s/%s' % (fontview_path, s)
+                        for s in os.listdir(fontview_path)
+                        if s.endswith('.cpp')]
+    subprocess.check_call(['clang++', '-std=c++11'] + pkg_config + wx_config + [
+        '-Isrc', '-Isrc/third_party/raqm/libraqm/src',
+        '-DFONTVIEW_VERSION=%s' % release,
+        'build/raqm.o', '-o', 'build/fontview'] + fontview_sources)
+    subprocess.check_call(['zip', 'build/fontview-linux.zip', 'build/fontview'])
 
 
 def package_mac(release):
