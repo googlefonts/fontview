@@ -5,6 +5,7 @@
             'type': 'static_library',
 	    'defines': [
 	        'HAVE_FREETYPE',
+                'HAVE_FT_GET_VAR_BLEND_COORDINATES',
                 'HAVE_INTEL_ATOMIC_PRIMITIVES',
 		'HAVE_OT',
                 'HAVE_UCDN',
