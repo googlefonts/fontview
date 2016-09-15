@@ -57,11 +57,13 @@ def build_linux(release):
         'wx-config --cflags --libs base,std,propgrid,qa'.split()).split()
     subprocess.check_call(['cc', '-c', '-std=c99'] + pkg_cflags + [
         '-Isrc/third_party/raqm/libraqm/src',
+        '-Isrc/third_party/ucdn',
         '-o', 'build/raqm.o', 'src/third_party/raqm/libraqm/src/raqm.c'])
     fontview_path = 'src/fontview'
     fontview_sources = ['%s/%s' % (fontview_path, s)
                         for s in os.listdir(fontview_path)
-                        if s.endswith('.cpp')]
+                        if s.endswith('.cpp')] + [
+                                'src/third_party/ucdn/ucdn/ucdn.c']
     subprocess.check_call([
         'c++', '-std=c++11'] + pkg_cflags + pkg_libs + wx_config + [
         '-Isrc', '-Isrc/third_party/raqm/libraqm/src',
