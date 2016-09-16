@@ -19,5 +19,5 @@ for example if you’d like porting the tool to other platforms.
 ```sh
 $ git clone --recursive https://github.com/googlei18n/fontview.git
 $ cd fontview
-$ python build.py && ./build/FontView.app/Contents/MacOS/fontview
+$ python2.7 build.py && ./build/FontView.app/Contents/MacOS/fontview
 ```
