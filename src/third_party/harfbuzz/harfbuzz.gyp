@@ -48,7 +48,7 @@
                 'harfbuzz/src/hb-shape.cc',
                 'harfbuzz/src/hb-shaper.cc',
                 'harfbuzz/src/hb-ucdn.cc',
-                'harfbuzz/src/hb-ucdn/ucdn.c',
+                #'harfbuzz/src/hb-ucdn/ucdn.c',
                 'harfbuzz/src/hb-unicode.cc',
                 #'harfbuzz/src/hb-uniscribe.cc',
                 'harfbuzz/src/hb-warning.cc',
@@ -68,7 +68,7 @@
             'include_dirs': [
                 'autoconf_generated',
 		'harfbuzz/src',
-		'harfbuzz/src/hb-ucdn',
+		#'harfbuzz/src/hb-ucdn',
 		'<(INTERMEDIATE_DIR)',
 	    ],
       	    'rules': [
@@ -88,6 +88,7 @@
 	    'dependencies': [
                 '../freetype/freetype.gyp:freetype',
                 '../ragel/ragel.gyp:ragel',
+                '../ucdn/ucdn.gyp:ucdn',
 	    ],
         },
     ]
