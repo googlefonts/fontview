@@ -184,10 +184,6 @@ void SampleText::Paint(wxDC& dc) {
       !raqm_set_par_direction(layout, RAQM_DIRECTION_DEFAULT) ||
       !raqm_set_language(layout, textLanguage_.c_str(), 0, text_.size()) ||
       !raqm_set_freetype_face(layout, fontFace_) ||
-
-      // Work around https://github.com/behdad/harfbuzz/issues/320
-      !raqm_add_font_feature(layout, "rvrn", -1) ||
-
       // !raqm_set_line_width(layout, GetSize().x - 8) ||
       !raqm_layout(layout)) {
     raqm_destroy(layout);
