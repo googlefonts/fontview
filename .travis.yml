@@ -1,5 +1,6 @@
 language: cpp
 sudo: false
+dist: trusty  # Debian 14.04
 
 os:
   - linux
@@ -14,6 +15,7 @@ addons:
     - libfreetype6-dev
     - libfribidi-dev
     - libharfbuzz-dev
+    - libwxgtk3.0-dev
 
 install:
   - export FONTVIEW_VERSION=$TRAVIS_TAG
