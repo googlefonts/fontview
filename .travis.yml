@@ -1,21 +1,24 @@
 language: cpp
 sudo: false
-dist: trusty  # Debian 14.04
+
+# As of December 2016, the Linux builds are broken on Travis.
+# The Linux configs are disabled until somebody has time to fix the build.
+# dist: trusty  # Debian 14.04
 
 os:
-  - linux
+  # - linux
   - osx
 
 compiler:
   - clang
 
-addons:
-  apt:
-    packages:
-    - libfreetype6-dev
-    - libfribidi-dev
-    - libharfbuzz-dev
-    - libwxgtk3.0-dev
+# addons:
+#   apt:
+#     packages:
+#     - libfreetype6-dev
+#     - libfribidi-dev
+#     - libharfbuzz-dev
+#     - libwxgtk3.0-dev
 
 install:
   - export FONTVIEW_VERSION=$TRAVIS_TAG
