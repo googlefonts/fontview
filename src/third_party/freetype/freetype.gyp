@@ -1,4 +1,5 @@
 {
+    'includes': ['../../common.gypi'],
     'targets': [
         {
             'target_name': 'freetype',
@@ -87,5 +88,3 @@
         }
     ]
 }
-
-
