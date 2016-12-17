@@ -55,6 +55,10 @@
 
         <key>LSTypeIsPackage</key>
         <false/>
+
+        <key>LSMinimumSystemVersion</key>
+        <string>10.10.0</string>
+
      </dict>
    </array>
   </dict>
