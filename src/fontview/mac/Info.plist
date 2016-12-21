@@ -34,6 +34,9 @@
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.graphics-design</string>
 
+    <key>LSMinimumSystemVersion</key>
+    <string>10.10.0</string>
+
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
 
@@ -58,9 +61,6 @@
 
         <key>LSTypeIsPackage</key>
         <false/>
-
-        <key>LSMinimumSystemVersion</key>
-        <string>10.10.0</string>
 
      </dict>
    </array>
