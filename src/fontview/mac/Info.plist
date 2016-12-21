@@ -31,6 +31,9 @@
       <string>en</string>
     </array>
 
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.graphics-design</string>
+
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
 
