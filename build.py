@@ -99,6 +99,10 @@ def package_mac(release):
     if os.system('/usr/bin/SetFile -t APPL '
                  'build/FontView.app/Contents/MacOS/fontview') != 0:
         return False
+    if os.system('/usr/bin/iconutil --convert icns '
+                 '--output build/FontView.app/Contents/Resources/app.icns '
+                 'src/fontview/mac/app.iconset') != 0:
+        return False
     if release:
         cwd = os.getcwd()
         os.chdir('build')

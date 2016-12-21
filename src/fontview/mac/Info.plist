@@ -8,6 +8,9 @@
     <key>CFBundleExecutable</key>
     <string>fontview</string>
 
+    <key>CFBundleIconFile</key>
+    <string>app</string>
+
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
 
