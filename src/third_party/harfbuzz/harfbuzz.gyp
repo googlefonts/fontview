@@ -29,6 +29,7 @@
                 'harfbuzz/src/hb-ot-font.cc',
                 'harfbuzz/src/hb-ot-layout.cc',
                 'harfbuzz/src/hb-ot-map.cc',
+                'harfbuzz/src/hb-ot-var.cc',
                 'harfbuzz/src/hb-ot-shape-complex-arabic.cc',
                 'harfbuzz/src/hb-ot-shape-complex-default.cc',
                 'harfbuzz/src/hb-ot-shape-complex-hangul.cc',
