@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google Inc. All rights reserved.
+ * Copyright 2017 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -365,7 +365,7 @@ void MyFrame::OnAbout(wxCommandEvent& event) {
 #endif
 
   info.SetCopyright(
-      wxT("Copyright © 2016 Google, Inc. All rights reserved.\n"
+      wxT("Copyright © 2017 Google, Inc. All rights reserved.\n"
           "Licensed under the Apache License, Version 2.0."));
   wxAboutBox(info);
 }
