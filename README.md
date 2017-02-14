@@ -18,8 +18,8 @@ hesitate to add new features; simply send a GitHub pull request when
 your change is ready.
 
 ## System Requirements
-1. Mac OS
-2. Xcode 8.0
+This software only supports Mac OS and Xcode 8.0 needs to be installed before
+building the source code.
 
 ## Building
 
