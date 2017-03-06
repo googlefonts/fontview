@@ -19,7 +19,7 @@
                 #'harfbuzz/src/hb-coretext.cc',
                 #'harfbuzz/src/hb-directwrite.cc',
                 'harfbuzz/src/hb-face.cc',
-                'harfbuzz/src/hb-fallback-shape.cc',
+                #'harfbuzz/src/hb-fallback-shape.cc',
                 'harfbuzz/src/hb-font.cc',
                 'harfbuzz/src/hb-ft.cc',
                 #'harfbuzz/src/hb-glib.cc',
