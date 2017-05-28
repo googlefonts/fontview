@@ -55,12 +55,8 @@ def build_linux(release):
         'pkg-config --libs freetype2 harfbuzz fribidi'.split()).split()
     wx_config = subprocess.check_output(
         'wx-config --cflags --libs base,std,propgrid,qa'.split()).split()
-    subprocess.check_call(['cc', '-c', '-std=c89'] + pkg_cflags + [
-        '-Isrc/third_party/ucdn',
-        '-o', 'build/ucdn.o', 'src/third_party/ucdn/ucdn/ucdn.c'])
     subprocess.check_call(['cc', '-c', '-std=c99'] + pkg_cflags + [
         '-Isrc/third_party/raqm/libraqm/src',
-        '-Isrc/third_party/ucdn',
         '-o', 'build/raqm.o', 'src/third_party/raqm/libraqm/src/raqm.c'])
     fontview_path = 'src/fontview'
     fontview_sources = ['%s/%s' % (fontview_path, s)
@@ -70,7 +66,7 @@ def build_linux(release):
         'c++', '-std=c++11'] + pkg_cflags + pkg_libs + wx_config + [
         '-Isrc', '-Isrc/third_party/raqm/libraqm/src',
         '-DFONTVIEW_VERSION=%s' % release,
-        'build/raqm.o', 'build/ucdn.o',
+        'build/raqm.o',
         '-o', 'build/fontview'] + fontview_sources)
     if release:
         subprocess.check_call([
