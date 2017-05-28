@@ -62,6 +62,7 @@ class MyApp : public wxApp {
  private:
   int numDocuments_;
   std::string defaultSampleText_;
+  std::unique_ptr<wxLocale> locale_;
 };
 
 
@@ -170,6 +171,9 @@ void MyApp::MacOpenFile(const wxString& path) {
 }
 
 bool MyApp::OnInit() {
+  locale_.reset(new wxLocale);
+  locale_->Init(wxLANGUAGE_ENGLISH_US);
+
   SetAppDisplayName(wxT("FontView"));
   if (FT_Init_FreeType(&freeTypeLibrary_)) {
     wxMessageBox("The FreeType library could not be initialized.",
