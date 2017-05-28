@@ -44,11 +44,25 @@ def build_mac(release):
         return False
     return True
 
+def check_pkgconfig(lib, min_version):
+    try:
+        subprocess.check_output(
+            ['pkg-config', '--exists', '%s >= %s' % (lib, min_version)])
+    except subprocess.CalledProcessError:
+        print("%s >= %s is missing" % (lib, min_version))
+        return False
+
+    return True
 
 def build_linux(release):
     if os.path.exists('build'):
         shutil.rmtree('build')
     os.mkdir('build')
+
+    if not check_pkgconfig("harfbuzz", "1.4.5") or \
+       not check_pkgconfig("freetype2", "19.0.13"):
+        return False
+
     pkg_cflags = subprocess.check_output(
         'pkg-config --cflags freetype2 harfbuzz fribidi'.split()).split()
     pkg_libs = subprocess.check_output(
