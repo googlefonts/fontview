@@ -77,7 +77,7 @@ def build_linux(release):
                         for s in os.listdir(fontview_path)
                         if s.endswith('.cpp')]
     subprocess.check_call([
-        'c++', '-std=c++11'] + pkg_cflags + pkg_libs + wx_config + [
+        os.getenv("CXX", "c++"), '-std=c++11'] + pkg_cflags + pkg_libs + wx_config + [
         '-Isrc', '-Isrc/third_party/raqm/libraqm/src',
         '-DFONTVIEW_VERSION=%s' % release,
         'build/raqm.o',
