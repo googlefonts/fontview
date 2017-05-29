@@ -17,10 +17,23 @@ porting should actually be quite easy). Likewise, please don’t
 hesitate to add new features; simply send a GitHub pull request when
 your change is ready.
 
-## Building
+## Building on macOS
 
 ```sh
 $ git clone --recursive https://github.com/googlei18n/fontview.git
 $ cd fontview
 $ python2.7 build.py && ./build/FontView.app/Contents/MacOS/fontview
+```
+
+## Building on Linux
+
+You need to first install wxWidgets as well as latest versions of FreeType,
+HarfBuzz and FriBiDi.
+
+```sh
+$ git clone https://github.com/googlei18n/fontview.git
+$ cd fontview
+$ git submodule init
+$ git submodule update src/third_party/raqm/libraqm
+$ python build.py && ./build/fontview
 ```
