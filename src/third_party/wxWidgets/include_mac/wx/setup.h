@@ -220,6 +220,7 @@
 #define wxUSE_UIACTIONSIMULATOR 1
 #define wxUSE_UNICODE 1
 #define wxUSE_UNICODE_UTF8 1
+#define wxUSE_UNSAFE_WXSTRING_CONV 0
 #define wxUSE_URL 0
 #define wxUSE_URL_NATIVE 0
 #define wxUSE_UTF8_LOCALE_ONLY 0
