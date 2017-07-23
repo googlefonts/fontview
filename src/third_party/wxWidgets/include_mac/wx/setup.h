@@ -222,7 +222,7 @@
 #define wxUSE_UNICODE_UTF8 1
 #define wxUSE_URL 0
 #define wxUSE_URL_NATIVE 0
-#define wxUSE_UTF8_LOCALE_ONLY 1
+#define wxUSE_UTF8_LOCALE_ONLY 0
 #define wxUSE_VALIDATORS 1
 #define wxUSE_VARIANT 1
 #define wxUSE_WCHAR_T 1
