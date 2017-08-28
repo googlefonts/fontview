@@ -27,11 +27,11 @@
 
 #include <hb.h>
 
-#include "fontview/font_style.h"
-#include "fontview/font_var_axis.h"
-#include "fontview/name_table.h"
-#include "fontview/text_settings.h"
-#include "fontview/util.h"
+#include "font_style.h"
+#include "font_var_axis.h"
+#include "name_table.h"
+#include "text_settings.h"
+#include "util.h"
 
 #include <wx/filename.h>
 

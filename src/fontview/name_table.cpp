@@ -24,7 +24,7 @@
 
 #include <wx/string.h>
 
-#include "fontview/name_table.h"
+#include "name_table.h"
 
 namespace fontview {
 

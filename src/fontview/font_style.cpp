@@ -29,10 +29,10 @@
 #include <hb-ft.h>
 #include <hb-ot.h>
 
-#include "fontview/font_style.h"
-#include "fontview/font_var_axis.h"
-#include "fontview/name_table.h"
-#include "fontview/util.h"
+#include "font_style.h"
+#include "font_var_axis.h"
+#include "name_table.h"
+#include "util.h"
 
 namespace fontview {
 

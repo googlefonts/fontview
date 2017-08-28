@@ -26,8 +26,8 @@
 #include <wx/rawbmp.h>
 #include <wx/wx.h>
 
-#include "fontview/sample_text.h"
-#include "fontview/util.h"
+#include "sample_text.h"
+#include "util.h"
 
 namespace fontview {
 

@@ -21,9 +21,9 @@
 #include FT_MULTIPLE_MASTERS_H
 #include FT_TYPES_H
 
-#include "fontview/font_var_axis.h"
-#include "fontview/name_table.h"
-#include "fontview/util.h"
+#include "font_var_axis.h"
+#include "name_table.h"
+#include "util.h"
 
 #include <memory>
 
