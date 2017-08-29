@@ -47,7 +47,7 @@ def build_mac(release):
 def check_pkgconfig(lib, min_version):
     try:
         subprocess.check_output(
-            ['pkg-config', '--exists', '%s >= %s' % (lib, min_version)])
+            ['pkg-config', '--atleast-version', min_version, lib])
     except subprocess.CalledProcessError:
         print("%s >= %s is missing" % (lib, min_version))
         return False
@@ -69,18 +69,26 @@ def build_linux(release):
         'pkg-config --libs freetype2 harfbuzz fribidi'.split()).split()
     wx_config = subprocess.check_output(
         'wx-config --cflags --libs base,std,propgrid,qa'.split()).split()
-    subprocess.check_call(['cc', '-c', '-std=c99'] + pkg_cflags + [
-        '-Isrc/third_party/raqm/libraqm/src',
-        '-o', 'build/raqm.o', 'src/third_party/raqm/libraqm/src/raqm.c'])
+    if check_pkgconfig("raqm", "0.2.0"):
+        pkg_cflags += subprocess.check_output(
+            ['pkg-config', '--cflags', 'raqm']).split()
+        pkg_libs += subprocess.check_output(
+            ['pkg-config', '--libs', 'raqm']).split()
+    else:
+        subprocess.check_call(['cc', '-c', '-std=c99'] + pkg_cflags + [
+            '-Isrc/third_party/raqm/libraqm/src',
+            '-o', 'build/raqm.o', 'src/third_party/raqm/libraqm/src/raqm.c'])
+        pkg_cflags.append('-Isrc/third_party/raqm/libraqm/src')
+        pkg_libs.append('build/raqm.o')
+
     fontview_path = 'src/fontview'
     fontview_sources = ['%s/%s' % (fontview_path, s)
                         for s in os.listdir(fontview_path)
                         if s.endswith('.cpp')]
     subprocess.check_call([
         os.getenv("CXX", "c++"), '-std=c++11'] + pkg_cflags + pkg_libs + wx_config + [
-        '-Isrc', '-Isrc/third_party/raqm/libraqm/src',
+        '-Isrc',
         '-DFONTVIEW_VERSION=%s' % release,
-        'build/raqm.o',
         '-o', 'build/fontview'] + fontview_sources)
     if release:
         subprocess.check_call([
