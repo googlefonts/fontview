@@ -60,7 +60,7 @@ def build_linux(release):
     os.mkdir('build')
 
     if not check_pkgconfig("harfbuzz", "1.4.5") or \
-       not check_pkgconfig("freetype2", "19.0.13"):
+       not check_pkgconfig("freetype2", "2.8.1"):
         return False
 
     pkg_cflags = subprocess.check_output(
