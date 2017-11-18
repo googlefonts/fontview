@@ -353,7 +353,7 @@ void MyFrame::OnChangeSampleText(wxCommandEvent& event) {
   // This is needed on GTK+, where wxWidgets doesn't use UTF8 internally.
   std::string text(dialog.GetValue().mb_str(wxConvUTF8));
   sampleText_->SetText(text, true);
-  sampleText_->Paint();
+  sampleText_->Refresh();
 }
 
 void MyFrame::OnAbout(wxCommandEvent& event) {
@@ -407,7 +407,7 @@ void MyFrame::OnTextSettingsChanged() {
     if (!sampleText_->HasCustomText() && curStyle) {
       sampleText_->SetText(curStyle->GetSampleText(), false);
     }
-    sampleText_->Paint();
+    sampleText_->Refresh();
   }
 
   processingModelChange_ = false;

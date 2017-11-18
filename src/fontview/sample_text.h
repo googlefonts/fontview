@@ -43,7 +43,6 @@ class SampleText : public wxScrolledCanvas {
   void SetTextLanguage(const std::string& language);  // BCP47 code
   void SetFontFace(FT_Face fontFace);
   void SetFontSize(double size);
-  void Paint();
   wxDECLARE_EVENT_TABLE();
 
  protected:
@@ -51,7 +50,6 @@ class SampleText : public wxScrolledCanvas {
 
  private:
   void OnPaint(wxPaintEvent& event);
-  void Paint(wxDC& dc);
   void DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph, double x, double y);
 
   bool hasCustomText_;

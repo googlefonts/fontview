@@ -67,16 +67,6 @@ wxSize SampleText::DoGetBestSize() const {
   return wxSize(600, 300);
 }
 
-void SampleText::Paint() {
-  wxWindowDC dc(this);
-  Paint(dc);
-}
-
-void SampleText::OnPaint(wxPaintEvent& event) {
-  wxPaintDC dc(this);
-  Paint(dc);
-}
-
 static void CopyAlpha(const FT_Bitmap& source,
                       int leftOffset, int topOffset,
                       wxBitmap* target) {
@@ -166,7 +156,8 @@ void SampleText::DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph,
   FT_Bitmap_Done(face->glyph->library, &ftBitmap);
 }
 
-void SampleText::Paint(wxDC& dc) {
+void SampleText::OnPaint(wxPaintEvent& event) {
+  wxPaintDC dc(this);
   if (!fontFace_ || !dc.IsOk()) {
     return;
   }
