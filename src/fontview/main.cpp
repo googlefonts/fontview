@@ -30,6 +30,7 @@
 #include <wx/gbsizer.h>
 #include <wx/slider.h>
 #include <wx/spinctrl.h>
+#include <wx/textctrl.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -75,13 +76,13 @@ class MyFrame : public wxFrame {
  private:
   void OnOpen(wxCommandEvent& event);
   void OnClose(wxCommandEvent& event);
-  void OnChangeSampleText(wxCommandEvent& event);
   void OnExit(wxCommandEvent& event);
   void OnAbout(wxCommandEvent& event);
   void OnFamilyChoiceChanged(wxCommandEvent& event);
   void OnStyleChoiceChanged(wxCommandEvent& event);
   void OnLanguageChoiceChanged(wxCommandEvent& event);
   void OnFontSizeFieldChanged(wxSpinDoubleEvent& event);
+  void OnSampleTextFieldChanged(wxCommandEvent& event);
   void OnAxisSliderChanged(wxCommandEvent& event);
   void OnTextSettingsChanged();
 
@@ -98,6 +99,7 @@ class MyFrame : public wxFrame {
 
   // These wxWidgets objects are owned by wxWidgets, not by us.
   SampleText* sampleText_;
+  wxTextCtrl* sampleTextCtrl_;
   wxPanel* propertyPanel_;
   wxChoice* familyChoice_;
   wxChoice* styleChoice_;
@@ -218,7 +220,7 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   : wxFrame(NULL, wxID_ANY, "", pos, size),
     textSettings_(textSettings),
     textSettingsListener_([this]() { this->OnTextSettingsChanged(); }),
-    sampleText_(NULL), propertyPanel_(NULL),
+    sampleText_(NULL), sampleTextCtrl_(NULL), propertyPanel_(NULL),
     familyChoice_(NULL), styleChoice_(NULL), sizeControl_(NULL),
     axisSizer_(new wxGridBagSizer(0, 4)),
     languageChoice_(NULL) {
@@ -237,45 +239,38 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   fileMenu->AppendSeparator();
   fileMenu->Append(wxID_EXIT);
 
-  wxMenu* editMenu = new wxMenu();
-  editMenu->Append(wxID_UNDO);
-  editMenu->Enable(wxID_UNDO, false);
-  editMenu->Append(wxID_REDO);
-  editMenu->Enable(wxID_REDO, false);
-  editMenu->AppendSeparator();
-  editMenu->Append(wxID_CUT);
-  editMenu->Enable(wxID_CUT, false);
-  editMenu->Append(wxID_COPY);
-  editMenu->Enable(wxID_COPY, false);
-  editMenu->Append(wxID_PASTE);
-  editMenu->Enable(wxID_PASTE, false);
-  editMenu->Append(wxID_CLEAR);
-  editMenu->Enable(wxID_CLEAR, false);
-  editMenu->AppendSeparator();
-  wxMenuItem* changeSampleText =
-      editMenu->Append(wxID_ANY, "Change Sample Text...\tCtrl+T");
-  editMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, &MyFrame::OnChangeSampleText, this, changeSampleText->GetId());
-
   wxMenu* helpMenu = new wxMenu();
   helpMenu->Append(wxID_ABOUT, wxT("About FontView"));
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
-  menuBar->Append(editMenu, "&Edit");
   menuBar->Append(helpMenu, "&Help");
   SetMenuBar(menuBar);
 
   wxPanel* framePanel = new wxPanel(this);
-  sampleText_ = new SampleText(framePanel);
   propertyPanel_ = new wxPanel(framePanel);
+  wxPanel* textPanel = new wxPanel(framePanel);
+  wxPanel* textCtrlPanel = new wxPanel(textPanel);
   wxPanel* stylePanel = new wxPanel(propertyPanel_);
   wxBoxSizer* framePanelSizer = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer* textPanelSizer = new wxBoxSizer(wxVERTICAL);
+  wxBoxSizer* textCtrlPanelSizer = new wxBoxSizer(wxHORIZONTAL);
   wxBoxSizer* propertyPanelSizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer* stylePanelSizer = new wxBoxSizer(wxHORIZONTAL);
 
+  sampleText_ = new SampleText(textPanel);
   sampleText_->SetBackgroundColour(wxColour(wxT("#ffffff")));
 
+  sampleTextCtrl_ = new wxTextCtrl(textCtrlPanel, wxID_ANY);
+
+  textCtrlPanel->SetSizer(textCtrlPanelSizer);
+  textCtrlPanelSizer->Add(sampleTextCtrl_, 1, wxEXPAND | wxALL, 0);
+
+  textPanel->SetSizer(textPanelSizer);
+  textPanelSizer->Add(sampleText_, 1, wxEXPAND | wxALL, 0);
+  textPanelSizer->Add(textCtrlPanel, 0, wxEXPAND | wxALL, 0);
+
   framePanel->SetSizer(framePanelSizer);
-  framePanelSizer->Add(sampleText_, 1, wxEXPAND | wxALL, 0);
+  framePanelSizer->Add(textPanel, 1, wxEXPAND | wxALL, 0);
   framePanelSizer->Add(propertyPanel_, 0, wxEXPAND | wxALL, 20);
 
   propertyPanel_->SetSizer(propertyPanelSizer);
@@ -317,6 +312,7 @@ MyFrame::MyFrame(const wxPoint& pos, const wxSize& size,
   languageChoice_->Bind(wxEVT_CHOICE, &MyFrame::OnLanguageChoiceChanged, this);
   sizeControl_->Bind(wxEVT_SPINCTRLDOUBLE, &MyFrame::OnFontSizeFieldChanged,
                      this);
+  sampleTextCtrl_->Bind(wxEVT_TEXT, &MyFrame::OnSampleTextFieldChanged, this);
 }
 
 MyFrame::~MyFrame() {
@@ -333,27 +329,6 @@ void MyFrame::OnClose(wxCommandEvent& event) {
 
 void MyFrame::OnExit(wxCommandEvent& event) {
   wxExit();
-}
-
-// TODO: Replace the modal dialog with direct manipulation.
-// The current user interface is rather terrible, but it took
-// just a few minutes to implement.
-void MyFrame::OnChangeSampleText(wxCommandEvent& event) {
-  // The cumbersome conversions are needed for wxWidgets on GTK+
-  // which apparently does not use UTF-8 internally.
-  const std::string& oldSample = sampleText_->GetText();
-  wxString oldSampleString =
-      wxString::FromUTF8(oldSample.c_str(), oldSample.length());
-  wxTextEntryDialog dialog(this, "Please enter the new sample text:",
-			   "Change Sample Text", oldSampleString);
-  if (dialog.ShowModal() != wxID_OK) {
-    return;
-  }
-
-  // This is needed on GTK+, where wxWidgets doesn't use UTF8 internally.
-  std::string text(dialog.GetValue().mb_str(wxConvUTF8));
-  sampleText_->SetText(text, true);
-  sampleText_->Refresh();
 }
 
 void MyFrame::OnAbout(wxCommandEvent& event) {
@@ -405,7 +380,11 @@ void MyFrame::OnTextSettingsChanged() {
   if (sampleText_) {
     FontStyle* curStyle = textSettings_->GetStyle();
     if (!sampleText_->HasCustomText() && curStyle) {
-      sampleText_->SetText(curStyle->GetSampleText(), false);
+      const std::string& sample = curStyle->GetSampleText();
+      wxString sampleString = wxString::FromUTF8(sample.c_str(), sample.length());
+
+      sampleText_->SetText(sample, false);
+      sampleTextCtrl_->SetValue(sampleString);
     }
     sampleText_->Refresh();
   }
@@ -1215,6 +1194,12 @@ void MyFrame::OnAxisSliderChanged(wxCommandEvent& event) {
 
 void MyFrame::OnFontSizeFieldChanged(wxSpinDoubleEvent& event) {
   textSettings_->SetFontSize(event.GetValue());
+}
+
+void MyFrame::OnSampleTextFieldChanged(wxCommandEvent& event) {
+  const std::string text = event.GetString().ToStdString();
+  sampleText_->SetText(text, true);
+  sampleText_->Refresh();
 }
 
 wxIMPLEMENT_APP(MyApp);
