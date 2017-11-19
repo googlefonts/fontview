@@ -195,8 +195,7 @@ void MyApp::OnInitCmdLine(wxCmdLineParser& parser) {
 bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser) {
   wxString sampleText;
   if (parser.Found("t", &sampleText) && !sampleText.empty()) {
-    // mb_str() needed on GTK+, where wxWidgets doesn't use UTF-8 internally.
-    defaultSampleText_.assign(sampleText.mb_str(wxConvUTF8));
+    defaultSampleText_.assign(sampleText.ToStdString());
   }
 
   for (size_t i = 0; i < parser.GetParamCount(); ++i) {
@@ -381,10 +380,8 @@ void MyFrame::OnTextSettingsChanged() {
     FontStyle* curStyle = textSettings_->GetStyle();
     if (!sampleText_->HasCustomText() && curStyle) {
       const std::string& sample = curStyle->GetSampleText();
-      wxString sampleString = wxString::FromUTF8(sample.c_str(), sample.length());
-
       sampleText_->SetText(sample, false);
-      sampleTextCtrl_->SetValue(sampleString);
+      sampleTextCtrl_->SetValue(sample);
     }
     sampleText_->Refresh();
   }
