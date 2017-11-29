@@ -508,6 +508,9 @@ void MyFrame::RebuildAxisSliders() {
 static const std::map<std::string, std::string> languageNames = {
   {"und-fonipa", "International Phonetic Alphabet"},
   {"und-fonnapa", "North American Phonetic Alphabet"},
+  {"und-syre", "Estrangelo Syriac"},
+  {"und-syrj", "Western Syriac"},
+  {"und-syrn", "Eastern Syriac"},
 
   // TODO: Remove this once HarfBuzz returns proper BCP47 codes.
   {"mo", "Moldavian"},  // deprecated; should be ro-MD
