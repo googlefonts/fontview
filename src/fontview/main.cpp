@@ -1093,6 +1093,7 @@ static const std::map<std::string, std::string> languageNames = {
   {"wbp", "Warlpiri"},
   {"wo", "Wolof"},
   {"wuu", "Wu Chinese"},
+  {"x-hbotmal", "Malayalam (Traditional)"},
   {"xal", "Kalmyk"},
   {"xh", "Xhosa"},
   {"xmf", "Mingrelian"},
