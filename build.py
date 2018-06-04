@@ -86,10 +86,10 @@ def build_linux(release):
                         for s in os.listdir(fontview_path)
                         if s.endswith('.cpp')]
     subprocess.check_call([
-        os.getenv("CXX", "c++"), '-std=c++11'] + pkg_cflags + pkg_libs + wx_config + [
+        os.getenv("CXX", "c++"), '-std=c++11'] + [
         '-Isrc',
         '-DFONTVIEW_VERSION=%s' % release,
-        '-o', 'build/fontview'] + fontview_sources)
+        '-o', 'build/fontview'] + fontview_sources + pkg_cflags + pkg_libs + wx_config)
     if release:
         subprocess.check_call([
             'zip', 'build/fontview-linux.zip', 'build/fontview'])
