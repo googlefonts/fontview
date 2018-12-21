@@ -150,7 +150,7 @@ void SampleText::DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph,
 			  ceil(height / scale) + topOffset,
 			  32, scale)) {
     CopyAlpha(ftBitmap, leftOffset, topOffset, &bitmap);
-    dc.DrawBitmap(bitmap, xPos, yPos);
+    dc.DrawBitmap(bitmap, round(xPos), round(yPos));
   }
 
   FT_Bitmap_Done(face->glyph->library, &ftBitmap);
