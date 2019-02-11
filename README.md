@@ -20,7 +20,9 @@ your change is ready.
 ## Building on macOS
 
 ```sh
-$ git clone --recursive https://github.com/googlei18n/fontview.git
+$ git clone --recursive https://github.com/googlei18n/fontview.git;
+# if you forget the recursive arg, run
+# git submodule update --init --recursive
 $ cd fontview
 $ python2.7 build.py && ./build/FontView.app/Contents/MacOS/fontview
 ```
