@@ -21,6 +21,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -34,6 +35,7 @@
 #include "util.h"
 
 #include <wx/filename.h>
+#include <wx/sysopt.h>
 
 namespace fontview {
 
@@ -248,7 +250,9 @@ bool TextSettings::SetStyleWithoutNotification(FontStyle* style) {
 void TextSettings::Clear() {
   textLanguage_ = "und";
   supportedTextLanguages_.clear();
-  fontSize_ = defaultFontSize;
+  fontSize_ = wxSystemOptions::GetOptionInt("FontSize");
+  if (fontSize_ == 0)
+    fontSize_ = defaultFontSize;
   variation_.clear();
   style_ = NULL;
   family_.clear();

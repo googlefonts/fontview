@@ -31,6 +31,7 @@
 #include <wx/slider.h>
 #include <wx/spinctrl.h>
 #include <wx/textctrl.h>
+#include <wx/sysopt.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -156,8 +157,12 @@ void MyApp::MacNewFile() {
 }
 
 void MyApp::MacOpenFile(const wxString& path) {
+  std::string sample = wxSystemOptions::GetOption("SampleText").ToStdString();
+  if (sample == "") {
+    sample = defaultSampleText_;
+  }
   std::unique_ptr<TextSettings> textSettings(
-      new TextSettings(defaultSampleText_));
+      new TextSettings(sample));
   if (!textSettings->SetFontContainer(path.ToStdString())) {
     wxMessageBox("FontView does not understand "
                  "the format of the selected file.",
@@ -1196,11 +1201,14 @@ void MyFrame::OnAxisSliderChanged(wxCommandEvent& event) {
 }
 
 void MyFrame::OnFontSizeFieldChanged(wxSpinDoubleEvent& event) {
-  textSettings_->SetFontSize(event.GetValue());
+  int fontSize = event.GetValue();
+  wxSystemOptions::SetOption("FontSize", fontSize);
+  textSettings_->SetFontSize(fontSize);
 }
 
 void MyFrame::OnSampleTextFieldChanged(wxCommandEvent& event) {
   const std::string text = event.GetString().ToStdString();
+  wxSystemOptions::SetOption("SampleText", text);
   sampleText_->SetText(text, true);
   sampleText_->Refresh();
 }
