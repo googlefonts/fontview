@@ -1,4 +1,4 @@
-# FontView [![Build Status](https://travis-ci.org/googlei18n/fontview.svg)](https://travis-ci.org/googlei18n/fontview)
+# FontView [![Build Status](https://travis-ci.org/googlefonts/fontview.svg?branch=master)](https://travis-ci.org/googlefonts/fontview)
 
 “FontView” is a little demo app that shows the contents of a font
 file. It opens `*.ttf`, `*.otf`, `*.ttc`, `*.otc`, `*.pfa`, and `*.pfb`
