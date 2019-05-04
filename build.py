@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python3
 #
 # Copyright 2017 Google Inc. All rights reserved.
 #
@@ -49,7 +49,7 @@ def check_pkgconfig(lib, min_version):
         subprocess.check_output(
             ['pkg-config', '--atleast-version', min_version, lib])
     except subprocess.CalledProcessError:
-        print("%s >= %s is missing" % (lib, min_version))
+        print(("%s >= %s is missing" % (lib, min_version)))
         return False
 
     return True
