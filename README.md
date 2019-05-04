@@ -24,7 +24,7 @@ $ git clone --recursive https://github.com/googlei18n/fontview.git;
 # if you forget the recursive arg, run
 # git submodule update --init --recursive
 $ cd fontview
-$ python2.7 build.py && ./build/FontView.app/Contents/MacOS/fontview
+$ python3 build.py && ./build/FontView.app/Contents/MacOS/fontview
 ```
 
 ## Building on Linux
