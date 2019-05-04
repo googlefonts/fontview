@@ -14,7 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse, codecs, shutil, subprocess, os, sys
+import argparse
+import codecs
+import shutil
+import os
+import subprocess
+import sys
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -44,6 +50,7 @@ def build_mac(release):
         return False
     return True
 
+
 def check_pkgconfig(lib, min_version):
     try:
         subprocess.check_output(
@@ -53,6 +60,7 @@ def check_pkgconfig(lib, min_version):
         return False
 
     return True
+
 
 def build_linux(release):
     if os.path.exists('build'):
