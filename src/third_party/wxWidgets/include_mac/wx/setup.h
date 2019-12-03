@@ -3,7 +3,9 @@
 
 #include "wx/osx/config_xcode.h"
 
+#define wxOSX_BITMAP_NATIVE_ACCESS 1
 #define wxOSX_USE_NATIVE_TOOLBAR 1
+#define wxOSX_USE_ICONREF 0
 #define wxUSE_ABOUTDLG 1
 #define wxUSE_ACCEL 1
 #define wxUSE_ACCESSIBILITY 0
@@ -108,11 +110,11 @@
 #define wxUSE_IMAGLIST 1
 #define wxUSE_INFOBAR  0
 #define wxUSE_INTL 1
-#define wxUSE_IOSTREAMH 0
 #define wxUSE_IPC 0
 #define wxUSE_IPV6 0
 #define wxUSE_JOYSTICK 0
 #define wxUSE_LIBJPEG 0
+#define wxUSE_LIBLZMA 0
 #define wxUSE_LIBMSPACK 0
 #define wxUSE_LIBPNG 0
 #define wxUSE_LIBTIFF 0
@@ -151,6 +153,7 @@
 #define wxUSE_PREFERENCES_EDITOR 1
 #define wxUSE_PRINTF_POS_PARAMS 1
 #define wxUSE_PRINTING_ARCHITECTURE 0
+#define wxUSE_PRIVATE_FONTS 1
 #define wxUSE_PROGRESSDLG 1
 #define wxUSE_PROPGRID 1
 #define wxUSE_PROTOCOL 0
