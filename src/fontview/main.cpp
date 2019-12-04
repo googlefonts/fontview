@@ -85,6 +85,7 @@ class MyFrame : public wxFrame {
   void OnFontSizeFieldChanged(wxSpinDoubleEvent& event);
   void OnSampleTextFieldChanged(wxCommandEvent& event);
   void OnAxisSliderChanged(wxCommandEvent& event);
+  void OnAxisSpinChanged(wxCommandEvent& event);
   void OnTextSettingsChanged();
 
   void RebuildFamilyChoice();
@@ -111,6 +112,7 @@ class MyFrame : public wxFrame {
   struct AxisSlider {
     wxStaticText* title;
     wxSlider* slider;
+    wxSpinCtrlDouble* spin;
     const FontVarAxis* axis;
   };
   std::vector<AxisSlider> axisSliders_;
@@ -377,6 +379,8 @@ void MyFrame::OnTextSettingsChanged() {
       fraction = fontview::clamp(fraction, 0.0, 1.0);
       s.slider->SetRange(0, 1000);
       s.slider->SetValue(static_cast<int>(fraction * 1000));
+      s.spin->SetRange(s.axis->GetMinValue(), s.axis->GetMaxValue());
+      s.spin->SetValue(iter->second);
     }
   }
 
@@ -475,8 +479,10 @@ void MyFrame::RebuildAxisSliders() {
   for (const AxisSlider& s : axisSliders_) {
     axisSizer_->Detach(s.title);
     axisSizer_->Detach(s.slider);
+    axisSizer_->Detach(s.spin);
     s.title->Destroy();
     s.slider->Destroy();
+    s.spin->Destroy();
   }
   axisSliders_.clear();
 
@@ -495,10 +501,16 @@ void MyFrame::RebuildAxisSliders() {
 	size.x = 200;
       }
       s.slider->SetMinSize(size);
+      s.spin = new wxSpinCtrlDouble(
+        propertyPanel_, wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize,
+        wxSP_ARROW_KEYS, 0, 1000, 0, 0.1);
+      s.spin->SetMaxSize(wxSize(60, -1));
       axisSliders_.push_back(s);
       axisSizer_->Add(s.title, wxGBPosition(row, 0), wxDefaultSpan);
       axisSizer_->Add(s.slider, wxGBPosition(row, 1), wxDefaultSpan);
+      axisSizer_->Add(s.spin, wxGBPosition(row, 2), wxDefaultSpan);
       s.slider->Bind(wxEVT_SLIDER, &MyFrame::OnAxisSliderChanged, this);
+      s.spin->Bind(wxEVT_SPINCTRLDOUBLE, &MyFrame::OnAxisSpinChanged, this);
       ++row;
     }
   }
@@ -1196,6 +1208,14 @@ void MyFrame::OnAxisSliderChanged(wxCommandEvent& event) {
     double fraction = static_cast<double>(s.slider->GetValue()) / 1000;
     double value = s.axis->GetMinValue() + fraction * range;
     var[s.axis->GetTag()] = value;
+  }
+  textSettings_->SetVariation(var);
+}
+
+void MyFrame::OnAxisSpinChanged(wxCommandEvent& event) {
+  FontStyle::Variation var;
+  for (const AxisSlider& s : axisSliders_) {
+    var[s.axis->GetTag()] = s.spin->GetValue();
   }
   textSettings_->SetVariation(var);
 }
