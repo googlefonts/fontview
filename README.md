@@ -20,7 +20,7 @@ your change is ready.
 ## Building on macOS
 
 ```sh
-$ git clone --recursive https://github.com/googlei18n/fontview.git;
+$ git clone --recursive https://github.com/googlefonts/fontview.git;
 # if you forget the recursive arg, run
 # git submodule update --init --recursive
 $ cd fontview
@@ -33,7 +33,7 @@ You need to first install wxWidgets as well as latest versions of FreeType,
 HarfBuzz and FriBiDi.
 
 ```sh
-$ git clone https://github.com/googlei18n/fontview.git
+$ git clone https://github.com/googlefonts/fontview.git
 $ cd fontview
 $ git submodule init
 $ git submodule update src/third_party/raqm/libraqm
