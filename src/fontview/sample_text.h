@@ -50,7 +50,7 @@ class SampleText : public wxScrolledCanvas {
 
  private:
   void OnPaint(wxPaintEvent& event);
-  void DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph, double x, double y);
+  void DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph, double x, double y, int &prevRsbDelta);
 
   bool hasCustomText_;
   std::string text_utf8_;

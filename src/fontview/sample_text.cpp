@@ -121,12 +121,12 @@ static inline int CompensateRounding(double pos, double scale) {
 }
 
 void SampleText::DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph,
-			   double xPos, double yPos) {
+			   double xPos, double yPos, int &prev_rsb_delta) {
   const double scale = dc.GetContentScaleFactor();
   const FT_F26Dot6 size =
     static_cast<FT_F26Dot6>(fontSize_ * 64 * scale + 0.5);
   if (FT_Set_Char_Size(face, size, size, 72, 72) ||
-      FT_Load_Glyph(face, glyph, FT_LOAD_RENDER) ||
+      FT_Load_Glyph(face, glyph, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT) ||
       !face->glyph) {
     return;
   }
@@ -144,6 +144,10 @@ void SampleText::DrawGlyph(wxDC& dc, FT_Face face, FT_UInt glyph,
   yPos -= fontFace_->glyph->bitmap_top / scale;
   const int leftOffset = CompensateRounding(xPos, scale);
   const int topOffset = CompensateRounding(yPos, scale);
+  if (prev_rsb_delta - fontFace_->glyph->lsb_delta > 32) xPos--;
+  else if (prev_rsb_delta - fontFace_->glyph->lsb_delta < -31) xPos++;
+
+  prev_rsb_delta = fontFace_->glyph->rsb_delta;
 
   wxBitmap bitmap;
   if (bitmap.CreateScaled(ceil(width / scale) + leftOffset,
@@ -188,12 +192,13 @@ void SampleText::OnPaint(wxPaintEvent& event) {
   raqm_glyph_t* glyphs = raqm_get_glyphs(layout, &numGlyphs);
   const double border = 4 * scale;
   double x = border, y = border + ascender;
+  int prev_rsb_delta = 0;
   for (size_t i = 0; i < numGlyphs; ++i) {
     // Even though x_offset is getting added, y_offset wants to be subtracted.
     // See https://github.com/googlei18n/fontview/issues/2 for pictures.
     double glyphX = x + glyphs[i].x_offset / (scale * 64.0);
     double glyphY = y - glyphs[i].y_offset / (scale * 64.0);
-    DrawGlyph(dc, glyphs[i].ftface, glyphs[i].index, glyphX, glyphY);
+    DrawGlyph(dc, glyphs[i].ftface, glyphs[i].index, glyphX, glyphY, prev_rsb_delta);
     x += glyphs[i].x_advance / (scale * 64.0);
     y -= glyphs[i].y_advance / (scale * 64.0);
   }
